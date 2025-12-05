@@ -1,5 +1,4 @@
-import { AlertTriangle, CheckCircle, Info } from "lucide-react"; // <--- Removed 'X'
-
+import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 export type ModalType = "danger" | "success" | "info";
 
 interface Props {

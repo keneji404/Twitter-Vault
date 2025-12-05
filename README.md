@@ -71,7 +71,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 
 #### 1. Getting your Data
 
-This app is designed to work best with data exported via [Twillot](https://chromewebstore.google.com/detail/twitter-bookmarks-search/cedokfdbikcoefpkofjncipjjmffnknf) or similar third-party bookmark managers that provide clean JSON/JSONL exports.
+This app is designed to work best with data exported via third-party bookmark exporters that provide clean JSON/JSONL exports.
 
 1.  Export your Bookmarks or Likes as a `.json` or `.jsonl` file.
 2.  Open **Twitter Vault**.

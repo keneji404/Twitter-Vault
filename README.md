@@ -41,7 +41,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 
 ### Getting Started
 
-##### Prerequisites
+#### Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
@@ -50,32 +50,32 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 
 ### Installation
 
-##### 1. Clone the repository
+#### 1. Clone the repository
 
 ```
   git clone https://github.com/keneji404/twitter-vault.git
   cd twitter-vault
 ```
 
-##### 2. Install dependencies
+#### 2. Install dependencies
 
 ```
   npm install
 ```
 
-##### 3. Run the development server
+#### 3. Run the development server
 
 ```
   npm run dev
 ```
 
-##### 4. Open `http://localhost:5173` in your browser
+#### 4. Open `http://localhost:5173` in your browser
 
 ---
 
 ### Usage Guide
 
-##### 1. Getting your Data
+#### 1. Getting your Data
 
 This app is designed to work best with data exported via [Twillot](https://chromewebstore.google.com/detail/twitter-bookmarks-search/cedokfdbikcoefpkofjncipjjmffnknf) or similar third-party bookmark managers that provide clean JSON/JSONL exports.
 
@@ -84,14 +84,14 @@ This app is designed to work best with data exported via [Twillot](https://chrom
 3.  Click the **Import** button in the top right.
 4.  Select your file. The app will process the data and store it in your browser.
 
-##### 2. Browsing
+#### 2. Browsing
 
 - Use the **Search Bar** to find specific text.
 - Toggle between **Bookmarks** and **Likes** using the tabs.
 - Click the **Layout Icons** (Grid, List, Gallery) to change how tweets are displayed.
 - Click "Authors" to see a leaderboard of who you bookmark the most.
 
-##### 3. Backup & Restore
+#### 3. Backup & Restore
 
 - **Export:** Click the "Export" button to save a clean backup of your current database. This includes any items you've deleted or organized.
 - **Reset:** Use the "Reset Database" button to wipe the local storage and start fresh.

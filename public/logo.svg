@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background Container -->
+  <rect x="32" y="32" width="448" height="448" rx="120" fill="url(#blueGrad)" />
+  
+  <!-- Vault Circle/Door -->
+  <circle cx="256" cy="256" r="140" fill="none" stroke="white" stroke-width="32" opacity="0.9" />
+  
+  <!-- Vault Handle / "T" shape hint -->
+  <path d="M256 160 V256 L320 320" stroke="white" stroke-width="40" stroke-linecap="round" fill="none" />
+  <circle cx="256" cy="256" r="30" fill="white" />
+  
+  <!-- Decorative Dots -->
+  <circle cx="256" cy="64" r="12" fill="white" opacity="0.5" />
+  <circle cx="256" cy="448" r="12" fill="white" opacity="0.5" />
+  <circle cx="64" cy="256" r="12" fill="white" opacity="0.5" />
+  <circle cx="448" cy="256" r="12" fill="white" opacity="0.5" />
+</svg>

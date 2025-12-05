@@ -7,8 +7,8 @@ export interface TweetItem {
   authorHandle: string;
   authorName: string;
   avatarUrl?: string;
-  mediaUrl?: string; // Keep for thumbnails
-  mediaUrls?: string[]; // <--- NEW: Store ALL image links
+  mediaUrl?: string;
+  mediaUrls?: string[];
   type: "bookmark" | "like" | "tweet";
   isDeleted: number;
   jsonBlob: any;

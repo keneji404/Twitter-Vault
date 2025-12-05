@@ -1,17 +1,5 @@
 # <img src="public/logo.svg" style="vertical-align: text-bottom" width="45"> Twitter Vault
 
-A privacy-focused, client-side application to view, search, and organize your X (Twitter) Bookmarks and Likes.
-
----
-
-### Table of Contents
-
-[TOCM]
-
----
-
-### Description
-
 Twitter Vault allows you to take control of your data. It imports your backed-up tweets (JSON/JSONL), stores them locally in your browser using IndexedDB, and provides a beautiful interface to browse your history without algorithms or internet tracking.
 
 ---
@@ -47,7 +35,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 
 ### Getting Started
 
-##### Prerequisites
+#### Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
@@ -56,51 +44,58 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 
 ### Installation
 
-##### 1. Clone the repository
+#### 1. Clone the repository
 
 ```
   git clone https://github.com/keneji404/twitter-vault.git
   cd twitter-vault
 ```
 
-##### 2. Install dependencies
+#### 2. Install dependencies
 
 ```
   npm install
 ```
 
-##### 3. Run the development server
+#### 3. Run the development server
 
 ```
   npm run dev
 ```
 
-##### 4. Open `http://localhost:5173` in your browser
+#### 4. Open `http://localhost:5173` in your browser
 
 ---
 
 ### Usage Guide
 
-##### 1. Getting your Data
+#### 1. Getting your Data
 
-This app is designed to work best with data exported via [Twillot](https://www.twillot.com) or similar third-party bookmark managers that provide clean JSON/JSONL exports.
+This app is designed to work best with data exported via third-party bookmark exporters that provide clean JSON/JSONL exports.
 
 1.  Export your Bookmarks or Likes as a `.json` or `.jsonl` file.
 2.  Open **Twitter Vault**.
 3.  Click the **Import** button in the top right.
 4.  Select your file. The app will process the data and store it in your browser.
 
-##### 2. Browsing
+#### 2. Browsing
 
 - Use the **Search Bar** to find specific text.
 - Toggle between **Bookmarks** and **Likes** using the tabs.
 - Click the **Layout Icons** (Grid, List, Gallery) to change how tweets are displayed.
 - Click "Authors" to see a leaderboard of who you bookmark the most.
 
-##### 3. Backup & Restore
+#### 3. Backup & Restore
 
 - **Export:** Click the "Export" button to save a clean backup of your current database. This includes any items you've deleted or organized.
 - **Reset:** Use the "Reset Database" button to wipe the local storage and start fresh.
+
+---
+
+### WiP Features
+
+- Import User likes and view statistics
+- Fetch your Bookmarks directly in the app (no more 3rd party exporter)
 
 ---
 

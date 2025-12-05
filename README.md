@@ -1,11 +1,5 @@
 # <img src="public/logo.svg" style="vertical-align: text-bottom" width="45"> Twitter Vault
 
-A privacy-focused, client-side application to view, search, and organize your X (Twitter) Bookmarks and Likes.
-
----
-
-### Description
-
 Twitter Vault allows you to take control of your data. It imports your backed-up tweets (JSON/JSONL), stores them locally in your browser using IndexedDB, and provides a beautiful interface to browse your history without algorithms or internet tracking.
 
 ---

@@ -17,7 +17,6 @@ interface Props {
 export const TweetModal = ({ tweet, onClose }: Props) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Combine single mediaUrl (legacy) with new mediaUrls array
   const images =
     tweet.mediaUrls && tweet.mediaUrls.length > 0
       ? tweet.mediaUrls
@@ -34,7 +33,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentImageIndex]); // Re-bind for index updates
+  }, [currentImageIndex]);
 
   const nextImage = () => {
     if (currentImageIndex < images.length - 1)

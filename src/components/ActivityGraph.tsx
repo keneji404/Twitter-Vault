@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-// FIX: Use named import and type-only import
 import { ActivityCalendar } from "react-activity-calendar";
 import type { Activity } from "react-activity-calendar";
 import { useLiveQuery } from "dexie-react-hooks";

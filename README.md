@@ -92,6 +92,13 @@ This app is designed to work best with data exported via third-party bookmark ex
 
 ---
 
+### WiP Features
+
+- Import User likes and view statistics
+- Fetch your Bookmarks directly in the app (no more 3rd party exporter)
+
+---
+
 ### Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

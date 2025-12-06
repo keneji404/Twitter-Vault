@@ -63,8 +63,6 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
   npm run dev
 ```
 
-#### 4. Open `http://localhost:5173` in your browser
-
 ---
 
 ### Usage Guide

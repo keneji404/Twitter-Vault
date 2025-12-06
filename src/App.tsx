@@ -251,130 +251,140 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       {/* HEADER */}
-      <header className="p-6 border-b border-slate-800 flex flex-wrap gap-4 justify-between items-center sticky top-0 bg-slate-950/90 backdrop-blur z-20">
-        <div className="flex items-center gap-4">
-          {selectedAuthor ? (
-            <button
-              onClick={() => {
-                setSelectedAuthor(null);
-                setViewMode("authors");
-              }}
-              className="p-2 hover:bg-slate-800 rounded-full transition"
-            >
-              <ArrowLeft size={24} />
-            </button>
-          ) : (
-            <img
-              src="/logo.svg"
-              alt="Logo"
-              className="w-10 h-10 drop-shadow-lg hover:scale-110 transition duration-300"
-            />
-          )}
+      <header className="p-6 border-b border-slate-800 sticky top-0 bg-slate-950/90 backdrop-blur z-20">
+        <div className="flex flex-wrap gap-4 justify-between items-center">
+          <div className="flex items-center gap-4">
+            {selectedAuthor ? (
+              <button
+                onClick={() => {
+                  setSelectedAuthor(null);
+                  setViewMode("authors");
+                }}
+                className="p-2 hover:bg-slate-800 rounded-full transition"
+              >
+                <ArrowLeft size={24} />
+              </button>
+            ) : (
+              <img
+                src="/logo.svg"
+                alt="Logo"
+                className="w-10 h-10 drop-shadow-lg hover:scale-110 transition duration-300"
+              />
+            )}
 
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2 tracking-tight">
-              {selectedAuthor ? `@${selectedAuthor}` : "Twitter Vault"}
-            </h1>
-            <p className="text-slate-500 text-xs font-medium">
-              {selectedAuthor
-                ? `${filteredItems.length} tweets from this user`
-                : `${allItems?.length || 0} ${filterType}s stored`}
-            </p>
+            <div className="hidden sm:inline">
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2 tracking-tight">
+                {selectedAuthor ? `@${selectedAuthor}` : "Twitter Vault"}
+              </h1>
+              <p className="text-slate-500 text-xs font-medium">
+                {selectedAuthor
+                  ? `${filteredItems.length} tweets from this user`
+                  : `${allItems?.length || 0} ${filterType}s stored`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 items-center">
+            {/* Export */}
+            <div className="relative" ref={exportMenuRef}>
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700"
+                title="Export Data"
+              >
+                <Download size={18} />
+                <span className="hidden sm:inline text-sm font-medium">
+                  Export
+                </span>
+              </button>
+
+              {showExportMenu && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
+                  <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
+                    Export Format
+                  </div>
+                  <button
+                    onClick={() => {
+                      exportData("json");
+                      setShowExportMenu(false);
+                    }}
+                    className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
+                  >
+                    JSON{" "}
+                    <span className="text-xs text-slate-500 group-hover:text-blue-200">
+                      Backup
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      exportData("jsonl");
+                      setShowExportMenu(false);
+                    }}
+                    className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
+                  >
+                    JSONL{" "}
+                    <span className="text-xs text-slate-500 group-hover:text-blue-200">
+                      Line Data
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      exportData("csv");
+                      setShowExportMenu(false);
+                    }}
+                    className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
+                  >
+                    CSV{" "}
+                    <span className="text-xs text-slate-500 group-hover:text-blue-200">
+                      Spreadsheet
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Import */}
+            <label
+              className={`p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700 cursor-pointer ${
+                isProcessing ? "opacity-50 pointer-events-none" : ""
+              }`}
+            >
+              {isProcessing ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Upload size={18} />
+              )}
+              <span className="hidden sm:inline text-sm font-medium">
+                {isProcessing ? "Processing..." : "Import"}
+              </span>
+              <input
+                type="file"
+                accept=".json,.jsonl"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isProcessing}
+              />
+            </label>
+
+            <div className="h-6 w-px bg-slate-800 mx-1"></div>
+
+            {/* Reset */}
+            <button
+              onClick={handleReset}
+              className="p-2 text-slate-600 hover:text-red-400 transition"
+              title="Reset Database"
+            >
+              <RotateCcw size={16} />
+            </button>
           </div>
         </div>
 
-        <div className="flex gap-2 items-center">
-          {/* Export */}
-          <div className="relative" ref={exportMenuRef}>
-            <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700"
-              title="Export Data"
-            >
-              <Download size={18} />
-              <span className="hidden sm:inline text-sm font-medium">
-                Export
-              </span>
-            </button>
-
-            {showExportMenu && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
-                <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
-                  Export Format
-                </div>
-                <button
-                  onClick={() => {
-                    exportData("json");
-                    setShowExportMenu(false);
-                  }}
-                  className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                >
-                  JSON{" "}
-                  <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                    Backup
-                  </span>
-                </button>
-                <button
-                  onClick={() => {
-                    exportData("jsonl");
-                    setShowExportMenu(false);
-                  }}
-                  className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                >
-                  JSONL{" "}
-                  <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                    Line Data
-                  </span>
-                </button>
-                <button
-                  onClick={() => {
-                    exportData("csv");
-                    setShowExportMenu(false);
-                  }}
-                  className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                >
-                  CSV{" "}
-                  <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                    Spreadsheet
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Import */}
-          <label
-            className={`p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700 cursor-pointer ${
-              isProcessing ? "opacity-50 pointer-events-none" : ""
-            }`}
-          >
-            {isProcessing ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Upload size={18} />
-            )}
-            <span className="hidden sm:inline text-sm font-medium">
-              {isProcessing ? "Processing..." : "Import"}
-            </span>
-            <input
-              type="file"
-              accept=".json,.jsonl"
-              className="hidden"
-              onChange={handleFileUpload}
-              disabled={isProcessing}
-            />
-          </label>
-
-          <div className="h-6 w-px bg-slate-800 mx-1"></div>
-
-          {/* Reset */}
-          <button
-            onClick={handleReset}
-            className="p-2 text-slate-600 hover:text-red-400 transition"
-            title="Reset Database"
-          >
-            <RotateCcw size={16} />
-          </button>
+        <div className="flex sm:hidden justify-end">
+          <p className="text-slate-500 text-xs font-medium">
+            {selectedAuthor
+              ? `${filteredItems.length} tweets from this user`
+              : `${allItems?.length || 0} ${filterType}s stored`}
+          </p>
         </div>
       </header>
 
@@ -403,7 +413,7 @@ function App() {
             />
           </div>
 
-          <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+          <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 justify-center">
             <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
               {["bookmark", "like"].map((t) => (
                 <button
@@ -466,7 +476,7 @@ function App() {
                 </button>
                 <button
                   onClick={() => setLayout("list")}
-                  className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                  className={`hidden h-8 w-8 sm:flex items-center justify-center rounded-md transition ${
                     layout === "list"
                       ? "bg-slate-800 text-blue-400 shadow"
                       : "text-slate-400 hover:text-white"

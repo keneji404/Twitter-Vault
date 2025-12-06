@@ -8,12 +8,11 @@ import {
   getYear,
   parseISO,
   differenceInDays,
-  isWeekend,
   startOfYear,
   endOfYear,
   eachDayOfInterval,
 } from "date-fns";
-import { Zap, Clock, CalendarDays, BarChart3, ChevronDown } from "lucide-react";
+import { CalendarDays, ChevronDown } from "lucide-react";
 
 interface Props {
   type: "bookmark" | "like";
@@ -117,23 +116,6 @@ export const ActivityGraph = ({ type }: Props) => {
     }
     maxGap = maxGap > 0 ? maxGap - 1 : 0;
 
-    // 5. Weekend Activity
-    const weekendCount = itemsInYear.filter((i) =>
-      isWeekend(i.createdAt)
-    ).length;
-    const weekendPercent =
-      totalCount > 0 ? Math.round((weekendCount / totalCount) * 100) : 0;
-
-    // 6. Busiest Day
-    let busyDate = "";
-    let busyCount = 0;
-    activeDates.forEach((d) => {
-      if (counts[d] > busyCount) {
-        busyCount = counts[d];
-        busyDate = d;
-      }
-    });
-
     return {
       calendarData: yearData,
       availableYears,
@@ -142,10 +124,6 @@ export const ActivityGraph = ({ type }: Props) => {
         activeDays,
         maxStreak,
         maxGap,
-        weekendPercent,
-        busiest: busyDate
-          ? `${format(parseISO(busyDate), "MMM d")} (${busyCount})`
-          : "N/A",
       },
     };
   }, [items, selectedYear]);
@@ -182,7 +160,7 @@ export const ActivityGraph = ({ type }: Props) => {
       </div>
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total */}
         <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
           <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-1">
@@ -217,7 +195,7 @@ export const ActivityGraph = ({ type }: Props) => {
                 strokeWidth="4"
               />
             </svg>
-            <span className="text-xs font-bold text-green-400">
+            <span className="text-xs font-bold text-white">
               {stats.activeDays}
             </span>
           </div>
@@ -227,26 +205,6 @@ export const ActivityGraph = ({ type }: Props) => {
         </div>
 
         {/* Streak */}
-        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
-          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mb-2">
-            <Zap size={20} />
-          </div>
-          <span className="text-xl font-bold text-white">
-            {stats.maxStreak}
-          </span>
-          <span className="text-slate-500 text-xs">Longest Streak</span>
-        </div>
-
-        {/* Gap */}
-        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
-          <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-2">
-            <Clock size={20} />
-          </div>
-          <span className="text-xl font-bold text-white">{stats.maxGap}</span>
-          <span className="text-slate-500 text-xs">Longest Gap</span>
-        </div>
-
-        {/* Weekend */}
         <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
           <div className="mb-2 relative w-10 h-10 flex items-center justify-center">
             <svg
@@ -261,32 +219,53 @@ export const ActivityGraph = ({ type }: Props) => {
                 strokeWidth="4"
               />
               <path
-                className="text-blue-500"
-                strokeDasharray={`${stats.weekendPercent}, 100`}
+                className="text-orange-500"
+                strokeDasharray={`${Math.min(
+                  100,
+                  (stats.maxStreak / 365) * 100
+                )}, 100`}
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="4"
               />
             </svg>
-            <span className="text-xs font-bold text-blue-400">
-              {stats.weekendPercent}%
+            <span className="text-xs font-bold text-white">
+              {stats.maxStreak}
             </span>
           </div>
-          <span className="text-slate-500 text-xs font-medium">
-            Weekend Activity
-          </span>
+          <span className="text-slate-500 text-xs">Longest Streak</span>
         </div>
 
-        {/* Busiest Day */}
+        {/* Gap */}
         <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
-          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 mb-2">
-            <BarChart3 size={20} />
+          <div className="mb-2 relative w-10 h-10 flex items-center justify-center">
+            <svg
+              className="absolute w-full h-full -rotate-90"
+              viewBox="0 0 36 36"
+            >
+              <path
+                className="text-slate-800"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="text-red-500"
+                strokeDasharray={`${Math.min(
+                  100,
+                  (stats.maxGap / 365) * 100
+                )}, 100`}
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+            </svg>
+            <span className="text-xs font-bold text-white">{stats.maxGap}</span>
           </div>
-          <span className="text-sm font-bold text-white wrap-break-word w-full">
-            {stats.busiest}
-          </span>
-          <span className="text-slate-500 text-xs mt-1">Busiest Day</span>
+          <span className="text-slate-500 text-xs">Longest Gap</span>
         </div>
       </div>
 

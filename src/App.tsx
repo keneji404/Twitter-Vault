@@ -22,7 +22,7 @@ import {
   X,
   SquareStack,
   Download,
-  ShieldCheck,
+  Github,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -209,7 +209,7 @@ function App() {
             message: `Successfully added ${count} items to your vault.`,
             onConfirm: () => {
               closeDialog();
-              window.location.reload();
+              // window.location.reload();
             },
           });
         } catch (error: any) {
@@ -364,32 +364,6 @@ function App() {
               disabled={isProcessing}
             />
           </label>
-
-          <div className="h-6 w-px bg-slate-800 mx-1"></div>
-
-          {/* Github Link */}
-          <a
-            href="https://github.com/keneji404/Twitter-Vault"
-            className="p-2  text-slate-400 hover:text-white transition"
-            title="Github Page"
-            target="_blank"
-            rel="noopener"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-              <path d="M9 18c-4.51 2-5-2-7-2" />
-            </svg>
-          </a>
 
           <div className="h-6 w-px bg-slate-800 mx-1"></div>
 
@@ -610,7 +584,7 @@ function App() {
                           </div>
                           <div className="flex gap-2 mt-2">
                             <a
-                              href={`https://twitter.com/i/web/status/${item.id}`}
+                              href={`https://twitter.com/${item.authorHandle}/status/${item.id}`}
                               target="_blank"
                               rel="noreferrer"
                               onClick={(e) => e.stopPropagation()}
@@ -702,7 +676,7 @@ function App() {
                       </span>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
                         <a
-                          href={`https://twitter.com/i/web/status/${item.id}`}
+                          href={`https://twitter.com/${item.authorHandle}/status/${item.id}`}
                           target="_blank"
                           rel="noreferrer"
                           onClick={(e) => e.stopPropagation()}
@@ -781,7 +755,7 @@ function App() {
                       </p>
                       <div className="mt-4 pt-4 border-t border-slate-800 flex justify-between items-center opacity-60 group-hover:opacity-100 transition">
                         <a
-                          href={`https://twitter.com/i/web/status/${item.id}`}
+                          href={`https://twitter.com/${item.authorHandle}/status/${item.id}`}
                           target="_blank"
                           rel="noreferrer"
                           onClick={(e) => e.stopPropagation()}
@@ -849,8 +823,17 @@ function App() {
       {/* FOOTER */}
       <footer className="py-8 text-center text-slate-500 text-sm border-t border-slate-900 mt-auto bg-slate-950">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <ShieldCheck size={16} className="text-green-500" />
-          <span className="font-semibold text-slate-400">Local & Private</span>
+          {/* <ShieldCheck size={16} className="text-green-500" />
+          <span className="font-semibold text-slate-400">Local & Private</span> */}
+          <a
+            href="https://github.com/keneji404/Twitter-Vault"
+            target="_blank"
+            rel="noreferrer"
+            className="p-2 text-slate-400 hover:text-white transition flex gap-2 items-center"
+          >
+            <Github size={16} />
+            <span className="font-semibold"> View on GitHub</span>
+          </a>
         </div>
         <p className="max-w-md mx-auto px-4 leading-relaxed">
           Your data is processed entirely in your browser using IndexedDB. No

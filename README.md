@@ -16,7 +16,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 - **Organizer:** Group tweets by Author to see everything you've saved from a specific user.
 - **Media Viewer:** Built-in lightbox to view high-res images and carousels.
 - **Data Management:**
-  - Import from Twillot JSON/JSONL.
+  - Import JSON/JSONL using 3rd party bookmark exporters.
   - Export to JSON (Backup), JSONL, or CSV (Spreadsheet).
   - Soft delete unwanted items.
 
@@ -103,11 +103,11 @@ This app is designed to work best with data exported via third-party bookmark ex
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the project.
+<!-- 1. Fork the project.
 2. Create your feature branch `git checkout -b feature/AmazingFeature`.
 3. Commit your changes `git commit -m 'Add some AmazingFeature'`.
 4. Push to the branch `git push origin feature/AmazingFeature`.
-5. Open a Pull Request.
+5. Open a Pull Request. -->
 
 ---
 

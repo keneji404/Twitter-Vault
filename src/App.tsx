@@ -75,7 +75,21 @@ function App() {
 
   // --- Effects ---
 
-  // 1. Click Outside Export Menu
+  // 1. Handle Browser Back Button
+  useEffect(() => {
+    const handlePopState = () => {
+      // If we are currently viewing an author, go back to authors list
+      if (selectedAuthor) {
+        setSelectedAuthor(null);
+        setViewMode("authors");
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedAuthor]);
+
+  // 2. Click Outside Export Menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -89,7 +103,7 @@ function App() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 2. Responsive Column Listener
+  // 3. Responsive Column Listener
   useEffect(() => {
     const updateCols = () => {
       const w = window.innerWidth;
@@ -103,7 +117,7 @@ function App() {
     return () => window.removeEventListener("resize", updateCols);
   }, []);
 
-  // 3. Scroll to top on filter change
+  // 4. Scroll to top on filter change
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -248,6 +262,14 @@ function App() {
     });
   };
 
+  // Navigation Handler to push history state
+  const handleAuthorClick = (handle: string) => {
+    window.history.pushState(null, "", ""); // Add entry to browser history
+    setSelectedAuthor(handle);
+    setViewMode("feed");
+    setSearch("");
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       {/* HEADER */}
@@ -256,10 +278,7 @@ function App() {
           <div className="flex items-center gap-4">
             {selectedAuthor ? (
               <button
-                onClick={() => {
-                  setSelectedAuthor(null);
-                  setViewMode("authors");
-                }}
+                onClick={() => window.history.back()}
                 className="p-2 hover:bg-slate-800 rounded-full transition"
               >
                 <ArrowLeft size={24} />
@@ -403,9 +422,7 @@ function App() {
             <input
               type="text"
               placeholder={
-                viewMode === "authors"
-                  ? "Search authors..."
-                  : "Search text, @handle..."
+                viewMode === "authors" ? "Search authors..." : "Search"
               }
               className="w-full h-10 bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-blue-500 outline-none transition text-white placeholder:text-slate-600"
               value={search}
@@ -504,15 +521,11 @@ function App() {
         {/* --- VIEW: AUTHORS --- */}
         {viewMode === "authors" && !selectedAuthor && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {visibleAuthors.map((group) => (
                 <button
                   key={group.handle}
-                  onClick={() => {
-                    setSelectedAuthor(group.handle);
-                    setViewMode("feed");
-                    setSearch("");
-                  }}
+                  onClick={() => handleAuthorClick(group.handle)}
                   className="bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 transition p-4 rounded-xl flex items-center gap-4 text-left group"
                 >
                   <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">

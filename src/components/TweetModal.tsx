@@ -24,6 +24,17 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
       ? [tweet.mediaUrl]
       : [];
 
+  // Lock Body Scroll
+  useEffect(() => {
+    // Disable scrolling on the background
+    document.body.style.overflow = "hidden";
+
+    // Re-enable scrolling when component unmounts (closes)
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -50,7 +61,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
       onClick={onClose}
     >
       <div
-        className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col md:flex-row overflow-hidden shadow-2xl relative"
+        className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col md:flex-row overflow-hidden shadow-2xl relative overflow-y-auto custom-scrollbar"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
       >
         {/* CLOSE BUTTON */}
@@ -62,7 +73,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
         </button>
 
         {/* LEFT SIDE: IMAGE GALLERY */}
-        <div className="flex-1 bg-black flex items-center justify-center relative overflow-hidden group">
+        <div className="flex-1 bg-black flex items-center justify-center relative overflow-hidden group min-h-100">
           {images.length > 0 ? (
             <>
               <img
@@ -106,7 +117,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
 
         {/* RIGHT SIDE: TWEET INFO */}
         <div className="w-full md:w-[400px] flex flex-col bg-slate-950 border-l border-slate-800">
-          <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+          <div className="p-6 flex-1">
             {/* Author */}
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden border border-slate-700 shrink-0">
@@ -152,7 +163,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
           {/* Footer Actions */}
           <div className="p-4 border-t border-slate-900 bg-slate-900/50">
             <a
-              href={`https://twitter.com/i/web/status/${tweet.id}`}
+              href={`https://twitter.com/${tweet.authorHandle}/status/${tweet.id}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition"

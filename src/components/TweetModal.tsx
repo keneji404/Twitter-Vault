@@ -61,7 +61,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
       onClick={onClose}
     >
       <div
-        className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col md:flex-row overflow-hidden shadow-2xl relative overflow-y-auto custom-scrollbar"
+        className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col md:flex-row overflow-hidden shadow-2xl relative"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
       >
         {/* CLOSE BUTTON */}
@@ -73,7 +73,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
         </button>
 
         {/* LEFT SIDE: IMAGE GALLERY */}
-        <div className="flex-1 bg-black flex items-center justify-center relative overflow-hidden group min-h-100">
+        <div className="flex-1 bg-black flex items-center justify-center relative overflow-hidden group min-h-1/2">
           {images.length > 0 ? (
             <>
               <img
@@ -116,7 +116,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
         </div>
 
         {/* RIGHT SIDE: TWEET INFO */}
-        <div className="w-full md:w-[400px] flex flex-col bg-slate-950 border-l border-slate-800">
+        <div className="w-full md:w-[400px] flex flex-col bg-slate-950 border-l border-slate-800 overflow-y-auto custom-scrollbar">
           <div className="p-6 flex-1">
             {/* Author */}
             <div className="flex items-center gap-3 mb-6">

@@ -23,6 +23,7 @@ import {
   SquareStack,
   Download,
   Github,
+  House,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -303,107 +304,108 @@ function App() {
             </div>
           </div>
 
-          <div className="flex gap-2 items-center">
-            {/* Export */}
-            <div className="relative" ref={exportMenuRef}>
-              <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700"
-                title="Export Data"
-              >
-                <Download size={18} />
-                <span className="hidden sm:inline text-sm font-medium">
-                  Export
-                </span>
-              </button>
+          <div className="grid grid-row gap-1">
+            <div className="flex gap-2 items-center">
+              {/* Export */}
+              <div className="relative" ref={exportMenuRef}>
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700"
+                  title="Export Data"
+                >
+                  <Download size={18} />
+                  <span className="hidden sm:inline text-sm font-medium">
+                    Export
+                  </span>
+                </button>
 
-              {showExportMenu && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
-                  <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
-                    Export Format
+                {showExportMenu && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
+                      Export Format
+                    </div>
+                    <button
+                      onClick={() => {
+                        exportData("json");
+                        setShowExportMenu(false);
+                      }}
+                      className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
+                    >
+                      JSON{" "}
+                      <span className="text-xs text-slate-500 group-hover:text-blue-200">
+                        Backup
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportData("jsonl");
+                        setShowExportMenu(false);
+                      }}
+                      className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
+                    >
+                      JSONL{" "}
+                      <span className="text-xs text-slate-500 group-hover:text-blue-200">
+                        Line Data
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportData("csv");
+                        setShowExportMenu(false);
+                      }}
+                      className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
+                    >
+                      CSV{" "}
+                      <span className="text-xs text-slate-500 group-hover:text-blue-200">
+                        Spreadsheet
+                      </span>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      exportData("json");
-                      setShowExportMenu(false);
-                    }}
-                    className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                  >
-                    JSON{" "}
-                    <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                      Backup
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      exportData("jsonl");
-                      setShowExportMenu(false);
-                    }}
-                    className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                  >
-                    JSONL{" "}
-                    <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                      Line Data
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      exportData("csv");
-                      setShowExportMenu(false);
-                    }}
-                    className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                  >
-                    CSV{" "}
-                    <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                      Spreadsheet
-                    </span>
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
+
+              {/* Import */}
+              <label
+                className={`p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700 cursor-pointer ${
+                  isProcessing ? "opacity-50 pointer-events-none" : ""
+                }`}
+              >
+                {isProcessing ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Upload size={18} />
+                )}
+                <span className="hidden sm:inline text-sm font-medium">
+                  {isProcessing ? "Processing..." : "Import"}
+                </span>
+                <input
+                  type="file"
+                  accept=".json,.jsonl"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  disabled={isProcessing}
+                />
+              </label>
+
+              <div className="h-6 w-px bg-slate-800 mx-1"></div>
+
+              {/* Reset */}
+              <button
+                onClick={handleReset}
+                className="p-2 text-slate-600 hover:text-red-400 transition"
+                title="Reset Database"
+              >
+                <RotateCcw size={16} />
+              </button>
             </div>
-
-            {/* Import */}
-            <label
-              className={`p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700 cursor-pointer ${
-                isProcessing ? "opacity-50 pointer-events-none" : ""
-              }`}
-            >
-              {isProcessing ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Upload size={18} />
-              )}
-              <span className="hidden sm:inline text-sm font-medium">
-                {isProcessing ? "Processing..." : "Import"}
-              </span>
-              <input
-                type="file"
-                accept=".json,.jsonl"
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={isProcessing}
-              />
-            </label>
-
-            <div className="h-6 w-px bg-slate-800 mx-1"></div>
-
-            {/* Reset */}
-            <button
-              onClick={handleReset}
-              className="p-2 text-slate-600 hover:text-red-400 transition"
-              title="Reset Database"
-            >
-              <RotateCcw size={16} />
-            </button>
+            <div className="flex sm:hidden justify-end">
+              <p className="text-slate-500 text-xs font-medium">
+                {selectedAuthor
+                  ? `${filteredItems.length} tweets from this user`
+                  : `${allItems?.length || 0} ${filterType}s stored`}
+              </p>
+            </div>
           </div>
-        </div>
-
-        <div className="flex sm:hidden justify-end">
-          <p className="text-slate-500 text-xs font-medium">
-            {selectedAuthor
-              ? `${filteredItems.length} tweets from this user`
-              : `${allItems?.length || 0} ${filterType}s stored`}
-          </p>
         </div>
       </header>
 
@@ -460,7 +462,7 @@ function App() {
                 }`}
                 title="Feed"
               >
-                <LayoutGrid size={18} />
+                <House size={18} />
               </button>
               <button
                 onClick={() => {
@@ -487,7 +489,7 @@ function App() {
                       ? "bg-slate-800 text-blue-400 shadow"
                       : "text-slate-400 hover:text-white"
                   }`}
-                  title="Tile View"
+                  title="Grid View"
                 >
                   <LayoutGrid size={18} />
                 </button>

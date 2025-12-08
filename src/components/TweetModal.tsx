@@ -116,38 +116,37 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
         </div>
 
         {/* RIGHT SIDE: TWEET INFO */}
-        <div className="w-full md:w-[400px] flex flex-col bg-slate-950 border-l border-slate-800 overflow-y-auto custom-scrollbar">
-          <div className="p-6 flex-1">
-            {/* Author */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden border border-slate-700 shrink-0">
-                <img
-                  src={
-                    tweet.avatarUrl ||
-                    `https://unavatar.io/twitter/${tweet.authorHandle}`
-                  }
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
-                  }}
-                />
-              </div>
-              <div>
-                <div className="font-bold text-white text-lg">
-                  {tweet.authorName}
-                </div>
-                <a
-                  href={`https://twitter.com/${tweet.authorHandle}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-slate-500 hover:text-blue-400 transition"
-                >
-                  @{tweet.authorHandle}
-                </a>
-              </div>
+        <div className="w-full md:w-[400px] flex flex-col bg-slate-950 overflow-y-auto custom-scrollbar">
+          {/* Author */}
+          <div className="flex items-center gap-3 p-3 md:pe-15 bg-slate-950 border-b border-slate-900 sticky top-0">
+            <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden border border-slate-700 shrink-0">
+              <img
+                src={
+                  tweet.avatarUrl ||
+                  `https://unavatar.io/twitter/${tweet.authorHandle}`
+                }
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
+                }}
+              />
             </div>
-
+            <div>
+              <div className="font-bold text-white text-lg">
+                {tweet.authorName}
+              </div>
+              <a
+                href={`https://twitter.com/${tweet.authorHandle}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-slate-500 hover:text-blue-400 transition"
+              >
+                @{tweet.authorHandle}
+              </a>
+            </div>
+          </div>
+          <div className="p-6 flex-1">
             {/* Content */}
             <p className="text-slate-200 text-lg leading-relaxed whitespace-pre-wrap mb-6">
               {tweet.fullText}
@@ -161,7 +160,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 border-t border-slate-900 bg-slate-900/50">
+          <div className="p-4 border-t border-slate-900">
             <a
               href={`https://twitter.com/${tweet.authorHandle}/status/${tweet.id}`}
               target="_blank"

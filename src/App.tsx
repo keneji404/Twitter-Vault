@@ -52,7 +52,9 @@ function App() {
 
   // --- Drill Down State ---
   const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [visibleFeedCount, setVisibleFeedCount] = useState(ITEMS_PER_PAGE);
+  const [visibleAuthorsCount, setVisibleAuthorsCount] =
+    useState(ITEMS_PER_PAGE);
   const [selectedTweet, setSelectedTweet] = useState<TweetItem | null>(null);
 
   // --- Layout Helper State ---
@@ -82,6 +84,11 @@ function App() {
   // 1. Handle Browser Back Button
   useEffect(() => {
     const handlePopState = () => {
+      // Handles modal close button history
+      // if (selectedTweet) {
+      //   setSelectedTweet(null);
+      //   return;
+      // }
       // If we are currently viewing an author, go back to authors list
       if (selectedAuthor) {
         setSelectedAuthor(null);
@@ -91,7 +98,10 @@ function App() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectedAuthor]);
+  }, [
+    selectedAuthor,
+    //selectedTweet
+  ]);
 
   // 2. Click Outside Export Menu
   useEffect(() => {
@@ -107,7 +117,7 @@ function App() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 2. Responsive Column Listener
+  // 3. Responsive Column Listener
   useEffect(() => {
     const updateCols = () => {
       const w = window.innerWidth;
@@ -121,13 +131,15 @@ function App() {
     return () => window.removeEventListener("resize", updateCols);
   }, []);
 
-  // 3. Scroll to top on filter change
+  // 4. Reset everything during filter or search
   useEffect(() => {
-    setVisibleCount(ITEMS_PER_PAGE);
+    setVisibleFeedCount(ITEMS_PER_PAGE);
+    setVisibleAuthorsCount(ITEMS_PER_PAGE);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [search, filterType]);
 
-  // Preserving loaded authors list
+  // 5. Reset Feed only when selecting an author (Drill Down)
+  // Authors count will also be preserved
   useEffect(() => {
     if (selectedAuthor) {
       setVisibleFeedCount(ITEMS_PER_PAGE);
@@ -205,7 +217,7 @@ function App() {
 
     const cols = Array.from({ length: numColumns }, () => [] as TweetItem[]);
     const mediaItems = filteredItems
-      .slice(0, visibleCount)
+      .slice(0, visibleFeedCount)
       .filter((i) => i.mediaUrl);
 
     mediaItems.forEach((item, idx) => {
@@ -213,13 +225,19 @@ function App() {
     });
 
     return cols;
-  }, [filteredItems, visibleCount, layout, numColumns]);
+  }, [filteredItems, visibleFeedCount, layout, numColumns]);
 
-  const visibleFeed = filteredItems.slice(0, visibleCount);
-  const visibleAuthors = authorGroups.slice(0, visibleCount);
+  const visibleFeed = filteredItems.slice(0, visibleFeedCount);
+  const visibleAuthors = authorGroups.slice(0, visibleAuthorsCount);
 
   // --- Handlers ---
-  const handleLoadMore = () => setVisibleCount((prev) => prev + LOAD_MORE_STEP);
+  const handleLoadMore = () => {
+    if (viewMode === "authors" && !selectedAuthor) {
+      setVisibleAuthorsCount((prev) => prev + LOAD_MORE_STEP);
+    } else {
+      setVisibleFeedCount((prev) => prev + LOAD_MORE_STEP);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -284,6 +302,50 @@ function App() {
     window.scrollTo({ top: 0, behavior: "instant" });
   };
 
+  // Handler for Opening Tweet Modal
+  // const handleTweetClick = (item: TweetItem) => {
+  //   window.history.pushState(null, '', ''); // Push state so back button works
+  //   setSelectedTweet(item);
+  // };
+
+  // Handle Image Zip Download
+  const handleImageDownload = async () => {
+    if (!selectedAuthor) return;
+
+    setIsDownloadingImages(true);
+    setZipProgress({ current: 0, total: 0 }); // Reset
+    setShowExportMenu(false);
+
+    setTimeout(async () => {
+      try {
+        const count = await downloadMediaZip(
+          filteredItems,
+          selectedAuthor,
+          (current, total) => setZipProgress({ current, total }) // <--- Callback updates state
+        );
+
+        setDialog({
+          isOpen: true,
+          type: "success",
+          title: "Download Complete",
+          message: `Successfully zipped ${count} images for @${selectedAuthor}.`,
+          onConfirm: closeDialog,
+        });
+      } catch (error: any) {
+        console.error(error);
+        setDialog({
+          isOpen: true,
+          type: "info",
+          title: "Download Issue",
+          message: error.message || "Could not generate zip file.",
+          onConfirm: closeDialog,
+        });
+      } finally {
+        setIsDownloadingImages(false);
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       {/* HEADER */}
@@ -292,10 +354,7 @@ function App() {
           <div className="flex items-center gap-4">
             {selectedAuthor ? (
               <button
-                onClick={() => {
-                  setSelectedAuthor(null);
-                  setViewMode("authors");
-                }}
+                onClick={() => window.history.back()}
                 className="p-2 hover:bg-slate-800 rounded-full transition"
               >
                 <ArrowLeft size={24} />
@@ -562,11 +621,7 @@ function App() {
               {visibleAuthors.map((group) => (
                 <button
                   key={group.handle}
-                  onClick={() => {
-                    setSelectedAuthor(group.handle);
-                    setViewMode("feed");
-                    setSearch("");
-                  }}
+                  onClick={() => handleAuthorClick(group.handle)}
                   className="bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 transition p-4 rounded-xl flex items-center gap-4 text-left group"
                 >
                   <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
@@ -596,7 +651,7 @@ function App() {
             </div>
 
             {/* NEW: Load More Button for Authors */}
-            {visibleCount < authorGroups.length && (
+            {visibleAuthorsCount < authorGroups.length && (
               <div className="flex justify-center mt-8 pb-10">
                 <button
                   onClick={handleLoadMore}
@@ -844,7 +899,7 @@ function App() {
               </div>
             )}
 
-            {visibleCount < filteredItems.length && (
+            {visibleFeedCount < filteredItems.length && (
               <div className="flex justify-center mt-8 pb-10">
                 <button
                   onClick={handleLoadMore}

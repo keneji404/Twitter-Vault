@@ -49,9 +49,7 @@ function App() {
 
   // --- Drill Down State ---
   const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
-  const [visibleFeedCount, setVisibleFeedCount] = useState(ITEMS_PER_PAGE);
-  const [visibleAuthorsCount, setVisibleAuthorsCount] =
-    useState(ITEMS_PER_PAGE);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [selectedTweet, setSelectedTweet] = useState<TweetItem | null>(null);
 
   // --- Layout Helper State ---
@@ -78,26 +76,7 @@ function App() {
 
   // --- Effects ---
 
-  // 1. Handle Browser Back Button
-  useEffect(() => {
-    const handlePopState = () => {
-      // preserve the loaded list in authors tab
-      if (selectedTweet) {
-        setSelectedTweet(null);
-        return;
-      }
-      // If we are currently viewing an author, go back to authors list
-      if (selectedAuthor) {
-        setSelectedAuthor(null);
-        setViewMode("authors");
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectedAuthor, selectedTweet]);
-
-  // 2. Click Outside Export Menu
+  // 1. Click Outside Export Menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -111,7 +90,7 @@ function App() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 3. Responsive Column Listener
+  // 2. Responsive Column Listener
   useEffect(() => {
     const updateCols = () => {
       const w = window.innerWidth;
@@ -125,20 +104,11 @@ function App() {
     return () => window.removeEventListener("resize", updateCols);
   }, []);
 
-  // 4. Reset everything during filter or search
+  // 3. Scroll to top on filter change
   useEffect(() => {
-    setVisibleFeedCount(ITEMS_PER_PAGE);
-    setVisibleAuthorsCount(ITEMS_PER_PAGE);
+    setVisibleCount(ITEMS_PER_PAGE);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [search, filterType]);
-
-  // Preserving loaded authors list
-  useEffect(() => {
-    if (selectedAuthor) {
-      setVisibleFeedCount(ITEMS_PER_PAGE);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [selectedAuthor]);
+  }, [search, filterType, viewMode, selectedAuthor, layout]);
 
   // --- Data Logic ---
   const allItems = useLiveQuery(async () => {
@@ -210,7 +180,7 @@ function App() {
 
     const cols = Array.from({ length: numColumns }, () => [] as TweetItem[]);
     const mediaItems = filteredItems
-      .slice(0, visibleFeedCount)
+      .slice(0, visibleCount)
       .filter((i) => i.mediaUrl);
 
     mediaItems.forEach((item, idx) => {
@@ -218,19 +188,13 @@ function App() {
     });
 
     return cols;
-  }, [filteredItems, visibleFeedCount, layout, numColumns]);
+  }, [filteredItems, visibleCount, layout, numColumns]);
 
-  const visibleFeed = filteredItems.slice(0, visibleFeedCount);
-  const visibleAuthors = authorGroups.slice(0, visibleAuthorsCount);
+  const visibleFeed = filteredItems.slice(0, visibleCount);
+  const visibleAuthors = authorGroups.slice(0, visibleCount);
 
   // --- Handlers ---
-  const handleLoadMore = () => {
-    if (viewMode === "authors" && !selectedAuthor) {
-      setVisibleAuthorsCount((prev) => prev + LOAD_MORE_STEP);
-    } else {
-      setVisibleFeedCount((prev) => prev + LOAD_MORE_STEP);
-    }
-  };
+  const handleLoadMore = () => setVisibleCount((prev) => prev + LOAD_MORE_STEP);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -285,16 +249,6 @@ function App() {
     });
   };
 
-  // Navigation Handler to push history state
-  const handleAuthorClick = (handle: string) => {
-    window.history.pushState(null, "", ""); // Add entry to browser history
-    setSelectedAuthor(handle);
-    setViewMode("feed");
-    setSearch("");
-    // scroll to top when entering a profile
-    window.scrollTo({ top: 0, behavior: "instant" });
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       {/* HEADER */}
@@ -303,7 +257,10 @@ function App() {
           <div className="flex items-center gap-4">
             {selectedAuthor ? (
               <button
-                onClick={() => window.history.back()}
+                onClick={() => {
+                  setSelectedAuthor(null);
+                  setViewMode("authors");
+                }}
                 className="p-2 hover:bg-slate-800 rounded-full transition"
               >
                 <ArrowLeft size={24} />
@@ -551,7 +508,11 @@ function App() {
               {visibleAuthors.map((group) => (
                 <button
                   key={group.handle}
-                  onClick={() => handleAuthorClick(group.handle)}
+                  onClick={() => {
+                    setSelectedAuthor(group.handle);
+                    setViewMode("feed");
+                    setSearch("");
+                  }}
                   className="bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 transition p-4 rounded-xl flex items-center gap-4 text-left group"
                 >
                   <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
@@ -581,7 +542,7 @@ function App() {
             </div>
 
             {/* NEW: Load More Button for Authors */}
-            {visibleAuthorsCount < authorGroups.length && (
+            {visibleCount < authorGroups.length && (
               <div className="flex justify-center mt-8 pb-10">
                 <button
                   onClick={handleLoadMore}
@@ -829,7 +790,7 @@ function App() {
               </div>
             )}
 
-            {visibleFeedCount < filteredItems.length && (
+            {visibleCount < filteredItems.length && (
               <div className="flex justify-center mt-8 pb-10">
                 <button
                   onClick={handleLoadMore}

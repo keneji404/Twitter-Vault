@@ -49,7 +49,9 @@ function App() {
 
   // --- Drill Down State ---
   const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [visibleFeedCount, setVisibleFeedCount] = useState(ITEMS_PER_PAGE);
+  const [visibleAuthorsCount, setVisibleAuthorsCount] =
+    useState(ITEMS_PER_PAGE);
   const [selectedTweet, setSelectedTweet] = useState<TweetItem | null>(null);
 
   // --- Layout Helper State ---
@@ -79,6 +81,11 @@ function App() {
   // 1. Handle Browser Back Button
   useEffect(() => {
     const handlePopState = () => {
+      // preserve the loaded list in authors tab
+      if (selectedTweet) {
+        setSelectedTweet(null);
+        return;
+      }
       // If we are currently viewing an author, go back to authors list
       if (selectedAuthor) {
         setSelectedAuthor(null);
@@ -88,7 +95,7 @@ function App() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectedAuthor]);
+  }, [selectedAuthor, selectedTweet]);
 
   // 2. Click Outside Export Menu
   useEffect(() => {
@@ -118,11 +125,20 @@ function App() {
     return () => window.removeEventListener("resize", updateCols);
   }, []);
 
-  // 4. Scroll to top on filter change
+  // 4. Reset everything during filter or search
   useEffect(() => {
-    setVisibleCount(ITEMS_PER_PAGE);
+    setVisibleFeedCount(ITEMS_PER_PAGE);
+    setVisibleAuthorsCount(ITEMS_PER_PAGE);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [search, filterType, viewMode, selectedAuthor, layout]);
+  }, [search, filterType]);
+
+  // Preserving loaded authors list
+  useEffect(() => {
+    if (selectedAuthor) {
+      setVisibleFeedCount(ITEMS_PER_PAGE);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [selectedAuthor]);
 
   // --- Data Logic ---
   const allItems = useLiveQuery(async () => {
@@ -194,7 +210,7 @@ function App() {
 
     const cols = Array.from({ length: numColumns }, () => [] as TweetItem[]);
     const mediaItems = filteredItems
-      .slice(0, visibleCount)
+      .slice(0, visibleFeedCount)
       .filter((i) => i.mediaUrl);
 
     mediaItems.forEach((item, idx) => {
@@ -202,13 +218,19 @@ function App() {
     });
 
     return cols;
-  }, [filteredItems, visibleCount, layout, numColumns]);
+  }, [filteredItems, visibleFeedCount, layout, numColumns]);
 
-  const visibleFeed = filteredItems.slice(0, visibleCount);
-  const visibleAuthors = authorGroups.slice(0, visibleCount);
+  const visibleFeed = filteredItems.slice(0, visibleFeedCount);
+  const visibleAuthors = authorGroups.slice(0, visibleAuthorsCount);
 
   // --- Handlers ---
-  const handleLoadMore = () => setVisibleCount((prev) => prev + LOAD_MORE_STEP);
+  const handleLoadMore = () => {
+    if (viewMode === "authors" && !selectedAuthor) {
+      setVisibleAuthorsCount((prev) => prev + LOAD_MORE_STEP);
+    } else {
+      setVisibleFeedCount((prev) => prev + LOAD_MORE_STEP);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -269,6 +291,8 @@ function App() {
     setSelectedAuthor(handle);
     setViewMode("feed");
     setSearch("");
+    // scroll to top when entering a profile
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   return (
@@ -557,7 +581,7 @@ function App() {
             </div>
 
             {/* NEW: Load More Button for Authors */}
-            {visibleCount < authorGroups.length && (
+            {visibleAuthorsCount < authorGroups.length && (
               <div className="flex justify-center mt-8 pb-10">
                 <button
                   onClick={handleLoadMore}
@@ -805,7 +829,7 @@ function App() {
               </div>
             )}
 
-            {visibleCount < filteredItems.length && (
+            {visibleFeedCount < filteredItems.length && (
               <div className="flex justify-center mt-8 pb-10">
                 <button
                   onClick={handleLoadMore}

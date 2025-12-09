@@ -81,11 +81,6 @@ function App() {
   // 1. Handle Browser Back Button
   useEffect(() => {
     const handlePopState = () => {
-      // preserve the loaded list in authors tab
-      if (selectedTweet) {
-        setSelectedTweet(null);
-        return;
-      }
       // If we are currently viewing an author, go back to authors list
       if (selectedAuthor) {
         setSelectedAuthor(null);
@@ -95,7 +90,7 @@ function App() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectedAuthor, selectedTweet]);
+  }, [selectedAuthor]);
 
   // 2. Click Outside Export Menu
   useEffect(() => {

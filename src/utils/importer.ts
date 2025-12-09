@@ -57,16 +57,9 @@ export const processTwillotJson = async (file: File) => {
   }
 
   const itemsToSave: TweetItem[] = dataArray.map((entry) => {
-    // --- ID FIX ---
-    // Priority 1: tweet_id (Original Twillot format - The Clean Number)
-    // Priority 2: id (Backup format - usually clean, but sometimes garbage in Twillot)
+    // --- ID Logic ---
     let rawId = entry.tweet_id || entry.id || "unknown_id";
-
-    // SANITIZER: If ID accidentally looks like "bookmark_123...", strip the prefix
-    // This ensures links like twitter.com/status/123 work,
-    // instead of twitter.com/status/bookmark_123 (which breaks).
     if (rawId.startsWith("bookmark_")) {
-      // Extract the last part which is the actual Tweet ID
       const parts = rawId.split("_");
       rawId = parts[parts.length - 1];
     }
@@ -85,8 +78,8 @@ export const processTwillotJson = async (file: File) => {
     }
 
     // --- Author Logic ---
-    const authorHandle = entry.authorHandle || entry.username || "Unknown";
-    const authorName = entry.authorName || entry.screen_name || "Twitter User";
+    const authorHandle = entry.authorHandle || entry.screen_name || "Unknown";
+    const authorName = entry.authorName || entry.username || "Twitter User";
     const avatarUrl = entry.avatarUrl || entry.avatar_url;
 
     // --- Media Logic ---

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type TweetItem } from "./db/db";
 import { processTwillotJson } from "./utils/importer";
-import { exportData } from "./utils/exporter";
+import { exportData, downloadMediaZip } from "./utils/exporter";
 import { ActivityGraph } from "./components/ActivityGraph";
 import { TweetModal } from "./components/TweetModal";
 import { ConfirmModal, type ModalType } from "./components/ConfirmModal";
@@ -24,6 +24,7 @@ import {
   Download,
   Github,
   House,
+  ImageDown,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -40,6 +41,8 @@ const safeFormat = (date: Date | undefined, str: string) => {
 function App() {
   // --- Global UI State ---
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDownloadingImages, setIsDownloadingImages] = useState(false);
+  const [zipProgress, setZipProgress] = useState({ current: 0, total: 0 });
 
   // --- Navigation & Filter State ---
   const [search, setSearch] = useState("");
@@ -81,6 +84,11 @@ function App() {
   // 1. Handle Browser Back Button
   useEffect(() => {
     const handlePopState = () => {
+      // preserve the loaded list in authors tab
+      // if (selectedTweet) {
+      //   setSelectedTweet(null);
+      //   return;
+      // }
       // If we are currently viewing an author, go back to authors list
       if (selectedAuthor) {
         setSelectedAuthor(null);
@@ -90,7 +98,10 @@ function App() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectedAuthor]);
+  }, [
+    selectedAuthor,
+    // selectedTweet
+  ]);
 
   // 2. Click Outside Export Menu
   useEffect(() => {
@@ -127,7 +138,8 @@ function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [search, filterType]);
 
-  // Preserving loaded authors list
+  // 5. Reset Feed only when selecting an author (Drill Down)
+  // Authors count will also be preserved
   useEffect(() => {
     if (selectedAuthor) {
       setVisibleFeedCount(ITEMS_PER_PAGE);
@@ -290,6 +302,50 @@ function App() {
     window.scrollTo({ top: 0, behavior: "instant" });
   };
 
+  // Handler for Opening Tweet Modal
+  // const handleTweetClick = (item: TweetItem) => {
+  //   window.history.pushState(null, '', ''); // Push state so back button works
+  //   setSelectedTweet(item);
+  // };
+
+  // Handle Image Zip Download
+  const handleImageDownload = async () => {
+    if (!selectedAuthor) return;
+
+    setIsDownloadingImages(true);
+    setZipProgress({ current: 0, total: 0 }); // Reset
+    setShowExportMenu(false);
+
+    setTimeout(async () => {
+      try {
+        const count = await downloadMediaZip(
+          filteredItems,
+          selectedAuthor,
+          (current, total) => setZipProgress({ current, total }) // <--- Callback updates state
+        );
+
+        setDialog({
+          isOpen: true,
+          type: "success",
+          title: "Download Complete",
+          message: `Successfully zipped ${count} images for @${selectedAuthor}.`,
+          onConfirm: closeDialog,
+        });
+      } catch (error: any) {
+        console.error(error);
+        setDialog({
+          isOpen: true,
+          type: "info",
+          title: "Download Issue",
+          message: error.message || "Could not generate zip file.",
+          onConfirm: closeDialog,
+        });
+      } finally {
+        setIsDownloadingImages(false);
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       {/* HEADER */}
@@ -329,56 +385,75 @@ function App() {
               <div className="relative" ref={exportMenuRef}>
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700"
+                  disabled={isDownloadingImages}
+                  className={`p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center gap-2 border border-transparent hover:border-slate-700 ${
+                    isDownloadingImages ? "opacity-100" : ""
+                  }`}
                   title="Export Data"
                 >
-                  <Download size={18} />
-                  <span className="hidden sm:inline text-sm font-medium">
-                    Export
-                  </span>
+                  {isDownloadingImages ? (
+                    // LOADING STATE
+                    <>
+                      <Loader2
+                        size={18}
+                        className="animate-spin text-slate-400"
+                      />
+                      <span className="inline sm:hidden text-sm font-mono font-medium text-slate-400">
+                        {zipProgress.current}/{zipProgress.total}
+                      </span>
+                      <span className="hidden sm:inline text-sm font-medium text-slate-400">
+                        Zipping {zipProgress.current}/{zipProgress.total}
+                      </span>
+                    </>
+                  ) : (
+                    // DEFAULT STATE
+                    <>
+                      <Download size={18} />
+                      <span className="hidden sm:inline text-sm font-medium">
+                        Export
+                      </span>
+                    </>
+                  )}
                 </button>
 
                 {showExportMenu && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
+                    {/* 1. Download Images Option (Only visible if Author selected) */}
+                    {selectedAuthor && (
+                      <>
+                        <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
+                          Author Media
+                        </div>
+                        <button
+                          onClick={handleImageDownload}
+                          className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
+                        >
+                          <span>Download Album</span>
+                          <ImageDown
+                            size={16}
+                            className="text-slate-400 group-hover:text-inherit"
+                          />
+                        </button>
+                        <div className="h-px bg-slate-800 mx-2 my-1"></div>
+                      </>
+                    )}
+
+                    {/* 2. Export Backup Options */}
                     <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
-                      Export Format
+                      Data Backup
                     </div>
-                    <button
-                      onClick={() => {
-                        exportData("json");
-                        setShowExportMenu(false);
-                      }}
-                      className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                    >
-                      JSON{" "}
-                      <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                        Backup
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        exportData("jsonl");
-                        setShowExportMenu(false);
-                      }}
-                      className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                    >
-                      JSONL{" "}
-                      <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                        Line Data
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        exportData("csv");
-                        setShowExportMenu(false);
-                      }}
-                      className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group"
-                    >
-                      CSV{" "}
-                      <span className="text-xs text-slate-500 group-hover:text-blue-200">
-                        Spreadsheet
-                      </span>
-                    </button>
+                    {["json", "jsonl", "csv"].map((fmt) => (
+                      <button
+                        key={fmt}
+                        onClick={() => {
+                          exportData(fmt as any);
+                          setShowExportMenu(false);
+                        }}
+                        className="px-4 py-3 text-left text-sm text-slate-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-between group uppercase"
+                      >
+                        {fmt}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
@@ -851,6 +926,8 @@ function App() {
             tweet={selectedTweet}
             onClose={() => setSelectedTweet(null)}
           />
+          // onClose calls history.back() to cleanly exit modal via popstate
+          // <TweetModal tweet={selectedTweet} onClose={() => window.history.back()} />
         )}
 
         <ConfirmModal

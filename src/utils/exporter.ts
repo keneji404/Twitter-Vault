@@ -1,5 +1,6 @@
-import { db } from "../db/db";
+import { db, type TweetItem } from "../db/db";
 import { format } from "date-fns";
+import JSZip from "jszip";
 
 const downloadFile = (content: string, filename: string, mimeType: string) => {
   const blob = new Blob([content], { type: mimeType });
@@ -64,4 +65,105 @@ export const exportData = async (formatType: "json" | "jsonl" | "csv") => {
     const content = [headers.join(","), ...rows].join("\n");
     downloadFile(content, `${filename}.csv`, "text/csv");
   }
+};
+
+export const downloadMediaZip = async (
+  items: TweetItem[],
+  authorHandle: string,
+  onProgress: (current: number, total: number) => void // <--- NEW CALLBACK
+) => {
+  const zip = new JSZip();
+  const folderName = `${authorHandle}_media`;
+  const folder = zip.folder(folderName);
+
+  // 1. Calculate REAL total (account for multiple images per tweet)
+  const mediaItems = items.filter(
+    (i) => i.mediaUrl || (i.mediaUrls && i.mediaUrls.length > 0)
+  );
+
+  let totalImages = 0;
+  mediaItems.forEach((item) => {
+    const count =
+      item.mediaUrls && item.mediaUrls.length > 0
+        ? item.mediaUrls.length
+        : item.mediaUrl
+        ? 1
+        : 0;
+    totalImages += count;
+  });
+
+  if (totalImages === 0) {
+    alert("No images found for this user.");
+    return 0;
+  }
+
+  let processedCount = 0;
+  let successCount = 0;
+
+  // Initial progress update
+  onProgress(0, totalImages);
+
+  const batchSize = 5;
+
+  for (let i = 0; i < mediaItems.length; i += batchSize) {
+    const batch = mediaItems.slice(i, i + batchSize);
+
+    await Promise.all(
+      batch.map(async (item) => {
+        const urls =
+          item.mediaUrls && item.mediaUrls.length > 0
+            ? item.mediaUrls
+            : item.mediaUrl
+            ? [item.mediaUrl]
+            : [];
+
+        await Promise.all(
+          urls.map(async (url, index) => {
+            try {
+              const response = await fetch(url);
+              if (!response.ok) throw new Error("Network error");
+              const blob = await response.blob();
+
+              let ext = "jpg";
+              const type = blob.type.split("/")[1];
+              if (type) ext = type;
+
+              const dateStr = format(item.createdAt, "yyyy-MM-dd");
+              // Add index to filename if multiple images exist
+              const suffix = urls.length > 1 ? `_${index + 1}` : "";
+              const filename = `${item.authorHandle}_${dateStr}_${item.id}${suffix}.${ext}`;
+
+              folder?.file(filename, blob);
+              successCount++;
+            } catch (err) {
+              console.error(`Failed to download ${url}`, err);
+            } finally {
+              // Update progress regardless of success/fail
+              processedCount++;
+              onProgress(processedCount, totalImages);
+            }
+          })
+        );
+      })
+    );
+  }
+
+  if (successCount === 0) {
+    throw new Error(
+      "Failed to download images. This might be due to CORS security."
+    );
+  }
+
+  const content = await zip.generateAsync({ type: "blob" });
+
+  const url = URL.createObjectURL(content);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${folderName}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  return successCount;
 };

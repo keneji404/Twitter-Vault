@@ -253,7 +253,6 @@ function App() {
             message: `Successfully added ${count} items to your vault.`,
             onConfirm: () => {
               closeDialog();
-              // window.location.reload();
             },
           });
         } catch (error: any) {

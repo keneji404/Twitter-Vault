@@ -25,6 +25,7 @@ import {
   Github,
   House,
   ImageDown,
+  BarChart2,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -47,7 +48,9 @@ function App() {
   // --- Navigation & Filter State ---
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"bookmark" | "like">("bookmark");
-  const [viewMode, setViewMode] = useState<"feed" | "authors">("feed");
+  const [viewMode, setViewMode] = useState<"feed" | "authors" | "activity">(
+    "feed"
+  );
   const [layout, setLayout] = useState<"grid" | "list" | "gallery">("grid");
 
   // --- Drill Down State ---
@@ -348,7 +351,7 @@ function App() {
   // Loading Screen (if there is currently a saved data available)
   if (!allItems) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col items-center justify-center font-sans transition-colors duration-300">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center font-sans transition-colors duration-300">
         <div className="flex flex-col items-center gap-6 animate-in fade-in duration-700">
           {/* Logo with Pulse Effect */}
           <div className="relative">
@@ -363,7 +366,7 @@ function App() {
 
           {/* Spinner and Text */}
           <div className="flex flex-col items-center gap-2">
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium animate-pulse">
+            <p className="text-slate-400 text-sm font-medium animate-pulse">
               Accessing Vault...
             </p>
           </div>
@@ -530,12 +533,9 @@ function App() {
       </header>
 
       <main className="p-6 max-w-7xl mx-auto space-y-8 flex-1 w-full">
-        {!selectedAuthor && viewMode === "feed" && (
-          <ActivityGraph type={filterType} />
-        )}
-
         {/* CONTROLS BAR */}
         <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+          {/* Search Input */}
           <div className="relative flex-1 w-full md:w-auto">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
@@ -543,6 +543,7 @@ function App() {
             />
             <input
               type="text"
+              disabled={viewMode === "activity"}
               placeholder={
                 viewMode === "authors" ? "Search authors..." : "Search"
               }
@@ -552,6 +553,92 @@ function App() {
             />
           </div>
 
+          {/* View Option Buttons */}
+          {(viewMode === "feed" || selectedAuthor) && (
+            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
+              <button
+                onClick={() => setLayout("grid")}
+                className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                  layout === "grid"
+                    ? "bg-slate-800 text-blue-400 shadow"
+                    : "text-slate-400 hover:text-white"
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid size={18} />
+              </button>
+              <button
+                onClick={() => setLayout("list")}
+                className={`hidden h-8 w-8 sm:flex items-center justify-center rounded-md transition ${
+                  layout === "list"
+                    ? "bg-slate-800 text-blue-400 shadow"
+                    : "text-slate-400 hover:text-white"
+                }`}
+                title="List View"
+              >
+                <List size={18} />
+              </button>
+              <button
+                onClick={() => setLayout("gallery")}
+                className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                  layout === "gallery"
+                    ? "bg-slate-800 text-blue-400 shadow"
+                    : "text-slate-400 hover:text-white"
+                }`}
+                title="Gallery View"
+              >
+                <ImageIcon size={18} />
+              </button>
+            </div>
+          )}
+
+          {/* Home/Authors/Activity tab button */}
+          <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
+            <button
+              onClick={() => {
+                setViewMode("feed");
+                setSelectedAuthor(null);
+              }}
+              className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                viewMode === "feed" && !selectedAuthor
+                  ? "bg-slate-800 text-blue-400 shadow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+              title="Feed"
+            >
+              <House size={18} />
+            </button>
+            <button
+              onClick={() => {
+                setViewMode("authors");
+                setSelectedAuthor(null);
+              }}
+              className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                viewMode === "authors"
+                  ? "bg-slate-800 text-blue-400 shadow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+              title="Authors"
+            >
+              <Users size={18} />
+            </button>
+            <button
+              onClick={() => {
+                setViewMode("activity");
+                setSelectedAuthor(null);
+              }}
+              className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                viewMode === "activity"
+                  ? "bg-slate-800 text-blue-400 shadow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+              title="Activity"
+            >
+              <BarChart2 size={18} />
+            </button>
+          </div>
+
+          {/* Bookmark/Like tab button*/}
           <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 justify-center">
             <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
               {["bookmark", "like"].map((t) => (
@@ -568,138 +655,11 @@ function App() {
                 </button>
               ))}
             </div>
-
-            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
-              <button
-                onClick={() => {
-                  setViewMode("feed");
-                  setSelectedAuthor(null);
-                }}
-                className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                  viewMode === "feed" && !selectedAuthor
-                    ? "bg-slate-800 text-blue-400 shadow"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Feed"
-              >
-                <House size={18} />
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode("authors");
-                  setSelectedAuthor(null);
-                }}
-                className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                  viewMode === "authors"
-                    ? "bg-slate-800 text-blue-400 shadow"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Authors"
-              >
-                <Users size={18} />
-              </button>
-            </div>
-
-            {(viewMode === "feed" || selectedAuthor) && (
-              <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
-                <button
-                  onClick={() => setLayout("grid")}
-                  className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                    layout === "grid"
-                      ? "bg-slate-800 text-blue-400 shadow"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                  title="Grid View"
-                >
-                  <LayoutGrid size={18} />
-                </button>
-                <button
-                  onClick={() => setLayout("list")}
-                  className={`hidden h-8 w-8 sm:flex items-center justify-center rounded-md transition ${
-                    layout === "list"
-                      ? "bg-slate-800 text-blue-400 shadow"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                  title="List View"
-                >
-                  <List size={18} />
-                </button>
-                <button
-                  onClick={() => setLayout("gallery")}
-                  className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                    layout === "gallery"
-                      ? "bg-slate-800 text-blue-400 shadow"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                  title="Gallery View"
-                >
-                  <ImageIcon size={18} />
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* --- VIEW: AUTHORS --- */}
-        {viewMode === "authors" && !selectedAuthor && (
-          <>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {visibleAuthors.map((group) => (
-                <button
-                  key={group.handle}
-                  onClick={() => handleAuthorClick(group.handle)}
-                  className="bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 transition p-4 rounded-xl flex items-center gap-4 text-left group"
-                >
-                  <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
-                    <img
-                      src={group.avatar}
-                      alt={group.handle}
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
-                      onError={(e) =>
-                        (e.currentTarget.src =
-                          "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png")
-                      }
-                    />
-                  </div>
-                  <div className="overflow-hidden">
-                    <div className="font-bold text-white truncate">
-                      {group.name}
-                    </div>
-                    <div className="text-slate-500 text-xs truncate">
-                      @{group.handle}
-                    </div>
-                    <div className="mt-2 text-xs font-mono text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full w-fit">
-                      {group.count}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* NEW: Load More Button for Authors */}
-            {visibleAuthorsCount < authorGroups.length && (
-              <div className="flex justify-center mt-8 pb-10">
-                <button
-                  onClick={handleLoadMore}
-                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-full font-medium transition shadow-lg hover:shadow-xl"
-                >
-                  Load More <ChevronDown size={16} />
-                </button>
-              </div>
-            )}
-
-            {authorGroups.length === 0 && (
-              <div className="col-span-full text-center py-20 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
-                <h3 className="text-lg text-slate-300 font-medium">
-                  No authors found
-                </h3>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* --- VIEW: FEED --- */}
-        {(viewMode === "feed" || selectedAuthor) && (
+        {/* --- VIEW: OPTIONS --- */}
+        {viewMode !== "activity" && (viewMode === "feed" || selectedAuthor) && (
           <>
             {/* GALLERY */}
             {layout === "gallery" && (
@@ -944,6 +904,71 @@ function App() {
               </div>
             )}
           </>
+        )}
+
+        {/* --- VIEW: AUTHORS --- */}
+        {viewMode === "authors" && !selectedAuthor && (
+          <>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {visibleAuthors.map((group) => (
+                <button
+                  key={group.handle}
+                  onClick={() => handleAuthorClick(group.handle)}
+                  className="bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 transition p-4 rounded-xl flex items-center gap-4 text-left group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
+                    <img
+                      src={group.avatar}
+                      alt={group.handle}
+                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
+                      onError={(e) =>
+                        (e.currentTarget.src =
+                          "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png")
+                      }
+                    />
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="font-bold text-white truncate">
+                      {group.name}
+                    </div>
+                    <div className="text-slate-500 text-xs truncate">
+                      @{group.handle}
+                    </div>
+                    <div className="mt-2 text-xs font-mono text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full w-fit">
+                      {group.count}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Load More Button for Authors */}
+            {visibleAuthorsCount < authorGroups.length && (
+              <div className="flex justify-center mt-8 pb-10">
+                <button
+                  onClick={handleLoadMore}
+                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-full font-medium transition shadow-lg hover:shadow-xl"
+                >
+                  Load More <ChevronDown size={16} />
+                </button>
+              </div>
+            )}
+
+            {authorGroups.length === 0 && (
+              <div className="col-span-full text-center py-20 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
+                <h3 className="text-lg text-slate-300 font-medium">
+                  No authors found
+                </h3>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* --- VIEW: ACTIVITY --- */}
+        {viewMode === "activity" && !selectedAuthor && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <ActivityGraph type={filterType} />
+          </div>
         )}
 
         {/* MODALS */}

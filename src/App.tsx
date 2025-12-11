@@ -26,6 +26,8 @@ import {
   House,
   ImageDown,
   BarChart2,
+  Bookmark,
+  Heart,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -534,9 +536,9 @@ function App() {
 
       <main className="p-6 max-w-7xl mx-auto space-y-8 flex-1 w-full">
         {/* CONTROLS BAR */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
           {/* Search Input */}
-          <div className="relative flex-1 w-full md:w-auto">
+          <div className="relative sm:flex-1 w-full">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
               size={20}
@@ -547,113 +549,138 @@ function App() {
               placeholder={
                 viewMode === "authors" ? "Search authors..." : "Search"
               }
-              className="w-full h-10 bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-blue-500 outline-none transition text-white placeholder:text-slate-600"
+              className={`w-full h-10 bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-blue-500 outline-none transition text-white placeholder:text-slate-600  ${
+                viewMode === "activity" ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          {/* View Option Buttons */}
-          {(viewMode === "feed" || selectedAuthor) && (
+          {/* NAVIGATION BUTTONS */}
+          <div className="flex gap-4 w-auto max-w-full overflow-x-auto no-scrollbar">
+            {/* View Options Buttons */}
+            {viewMode !== "activity" &&
+              (viewMode === "feed" || selectedAuthor) && (
+                <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
+                  <button
+                    onClick={() => setLayout("grid")}
+                    className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                      layout === "grid"
+                        ? "bg-slate-800 text-blue-400 shadow"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                    title="Grid View"
+                  >
+                    <LayoutGrid size={18} />
+                  </button>
+                  <button
+                    onClick={() => setLayout("list")}
+                    className={`hidden h-8 w-8 sm:flex items-center justify-center rounded-md transition ${
+                      layout === "list"
+                        ? "bg-slate-800 text-blue-400 shadow"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                    title="List View"
+                  >
+                    <List size={18} />
+                  </button>
+                  <button
+                    onClick={() => setLayout("gallery")}
+                    className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                      layout === "gallery"
+                        ? "bg-slate-800 text-blue-400 shadow"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                    title="Gallery View"
+                  >
+                    <ImageIcon size={18} />
+                  </button>
+                </div>
+              )}
+            {/* Home/Authors/Activity tab button */}
             <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
               <button
-                onClick={() => setLayout("grid")}
+                onClick={() => {
+                  setViewMode("feed");
+                  setSelectedAuthor(null);
+                }}
                 className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                  layout === "grid"
+                  viewMode === "feed" && !selectedAuthor
                     ? "bg-slate-800 text-blue-400 shadow"
                     : "text-slate-400 hover:text-white"
                 }`}
-                title="Grid View"
+                title="Feed"
               >
-                <LayoutGrid size={18} />
+                <House size={18} />
               </button>
               <button
-                onClick={() => setLayout("list")}
-                className={`hidden h-8 w-8 sm:flex items-center justify-center rounded-md transition ${
-                  layout === "list"
+                onClick={() => {
+                  setViewMode("authors");
+                  setSelectedAuthor(null);
+                }}
+                className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
+                  viewMode === "authors"
                     ? "bg-slate-800 text-blue-400 shadow"
                     : "text-slate-400 hover:text-white"
                 }`}
-                title="List View"
+                title="Authors"
               >
-                <List size={18} />
+                <Users size={18} />
               </button>
               <button
-                onClick={() => setLayout("gallery")}
+                onClick={() => {
+                  setViewMode("activity");
+                  setSelectedAuthor(null);
+                }}
                 className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                  layout === "gallery"
+                  viewMode === "activity"
                     ? "bg-slate-800 text-blue-400 shadow"
                     : "text-slate-400 hover:text-white"
                 }`}
-                title="Gallery View"
+                title="Activity"
               >
-                <ImageIcon size={18} />
+                <BarChart2 size={18} />
               </button>
             </div>
-          )}
-
-          {/* Home/Authors/Activity tab button */}
-          <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
-            <button
-              onClick={() => {
-                setViewMode("feed");
-                setSelectedAuthor(null);
-              }}
-              className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                viewMode === "feed" && !selectedAuthor
-                  ? "bg-slate-800 text-blue-400 shadow"
-                  : "text-slate-400 hover:text-white"
-              }`}
-              title="Feed"
-            >
-              <House size={18} />
-            </button>
-            <button
-              onClick={() => {
-                setViewMode("authors");
-                setSelectedAuthor(null);
-              }}
-              className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                viewMode === "authors"
-                  ? "bg-slate-800 text-blue-400 shadow"
-                  : "text-slate-400 hover:text-white"
-              }`}
-              title="Authors"
-            >
-              <Users size={18} />
-            </button>
-            <button
-              onClick={() => {
-                setViewMode("activity");
-                setSelectedAuthor(null);
-              }}
-              className={`h-8 w-8 flex items-center justify-center rounded-md transition ${
-                viewMode === "activity"
-                  ? "bg-slate-800 text-blue-400 shadow"
-                  : "text-slate-400 hover:text-white"
-              }`}
-              title="Activity"
-            >
-              <BarChart2 size={18} />
-            </button>
-          </div>
-
-          {/* Bookmark/Like tab button*/}
-          <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 justify-center">
-            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
-              {["bookmark", "like"].map((t) => (
+            {/* Bookmark/Like tab button*/}
+            <div className="flex gap-2 w-full md:w-auto">
+              <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800 h-10 items-center shrink-0">
                 <button
-                  key={t}
-                  onClick={() => setFilterType(t as any)}
-                  className={`h-8 px-3 rounded-md capitalize text-xs font-medium transition flex items-center ${
-                    filterType === t
-                      ? "bg-slate-800 text-white shadow"
+                  onClick={() => setFilterType("bookmark")}
+                  className={`h-8 px-3 rounded-md transition flex items-center gap-2 ${
+                    filterType === "bookmark"
+                      ? "bg-slate-800 text-blue-400 shadow-sm font-medium"
                       : "text-slate-400 hover:text-white"
                   }`}
+                  title="Bookmarks"
                 >
-                  {t}s
+                  <Bookmark
+                    size={16}
+                    className={`${
+                      filterType === "bookmark" ? "fill-current" : ""
+                    } block sm:hidden`}
+                  />
+                  <span className="hidden sm:inline text-xs">Bookmarks</span>
                 </button>
-              ))}
+                <button
+                  onClick={() => setFilterType("like")}
+                  className={`h-8 px-3 rounded-md transition flex items-center gap-2 ${
+                    filterType === "like"
+                      ? "bg-slate-800 text-blue-400 shadow-sm font-medium"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                  title="Likes"
+                >
+                  <Heart
+                    size={16}
+                    className={`${
+                      filterType === "like" ? "fill-current" : ""
+                    } block sm:hidden`}
+                  />
+                  <span className="hidden sm:inline text-xs">Likes</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

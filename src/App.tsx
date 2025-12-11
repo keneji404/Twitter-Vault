@@ -345,6 +345,33 @@ function App() {
     }, 100);
   };
 
+  // Loading Screen (if there is currently a saved data available)
+  if (!allItems) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col items-center justify-center font-sans transition-colors duration-300">
+        <div className="flex flex-col items-center gap-6 animate-in fade-in duration-700">
+          {/* Logo with Pulse Effect */}
+          <div className="relative">
+            <img
+              src="/logo.svg"
+              alt="Logo"
+              className="w-20 h-20 drop-shadow-2xl"
+            />
+            {/* Ping animation to show activity */}
+            <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20 animate-ping"></div>
+          </div>
+
+          {/* Spinner and Text */}
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium animate-pulse">
+              Accessing Vault...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       {/* HEADER */}

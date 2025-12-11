@@ -19,6 +19,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
   - Import JSON/JSONL using 3rd party bookmark exporters.
   - Export to JSON (Backup), JSONL, or CSV (Spreadsheet).
   - Soft delete unwanted items.
+  - Download a zip copy of saved bookmarks from a specific profile.
 
 ---
 
@@ -101,11 +102,11 @@ This app is designed to work best with data exported via third-party bookmark ex
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-<!-- 1. Fork the project.
-2. Create your feature branch `git checkout -b feature/AmazingFeature`.
-3. Commit your changes `git commit -m 'Add some AmazingFeature'`.
-4. Push to the branch `git push origin feature/AmazingFeature`.
-5. Open a Pull Request. -->
+1. Fork the project.
+2. Create your feature branch `git checkout -b feature/someFeature`.
+3. Commit your changes `git commit -m 'added someFeature'`.
+4. Push to the branch `git push origin feature/someFeature`.
+5. Open a Pull Request.
 
 ---
 
@@ -113,6 +114,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
-<!-- <p align="center">
+<p align="center">
 <small>keneji @2025</small>
-</p> -->
+</p>

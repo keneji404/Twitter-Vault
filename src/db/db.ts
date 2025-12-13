@@ -9,6 +9,7 @@ export interface TweetItem {
   avatarUrl?: string;
   mediaUrl?: string;
   mediaUrls?: string[];
+  videoUrl?: string;
   type: "bookmark" | "like" | "tweet";
   isDeleted: number;
   jsonBlob: any;

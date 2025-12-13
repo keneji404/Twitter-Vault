@@ -28,6 +28,7 @@ import {
   BarChart2,
   Bookmark,
   Heart,
+  Play,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -705,6 +706,11 @@ function App() {
                           className="w-full h-auto object-cover hover:scale-105 transition duration-500"
                           loading="lazy"
                         />
+                        {item.videoUrl && (
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 backdrop-blur-sm pointer-events-none group-hover:scale-110 transition">
+                            <Play size={32} fill="rgba(0,0,0,0.5)" />
+                          </div>
+                        )}
                         {(item.mediaUrls?.length || 0) > 1 && (
                           <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm pointer-events-none z-10">
                             <SquareStack size={12} /> {item.mediaUrls?.length}
@@ -772,6 +778,15 @@ function App() {
                             "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
                         }}
                       />
+                      {item.videoUrl && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                          <Play
+                            size={20}
+                            className="text-white drop-shadow-md"
+                            fill="rgba(0,0,0,0.5)"
+                          />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center h-full">
                       <div className="flex items-center gap-2 mb-1">
@@ -849,6 +864,15 @@ function App() {
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
+                        {item.videoUrl && (
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 backdrop-blur-sm pointer-events-none group-hover:bg-blue-400/80 transition">
+                            <Play
+                              size={32}
+                              strokeWidth={1}
+                              fill="rgba(0,0,0,0.5)"
+                            />
+                          </div>
+                        )}
                         {(item.mediaUrls?.length || 0) > 1 && (
                           <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
                             <SquareStack size={12} /> {item.mediaUrls?.length}

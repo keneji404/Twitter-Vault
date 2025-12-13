@@ -42,6 +42,7 @@ export const exportData = async (formatType: "json" | "jsonl" | "csv") => {
       "Text",
       "Media Count",
       "Media URLs",
+      "Video URL",
       "Original Link",
     ];
 
@@ -57,7 +58,8 @@ export const exportData = async (formatType: "json" | "jsonl" | "csv") => {
         escape(item.authorName),
         escape(item.fullText),
         item.mediaUrls?.length || 0,
-        escape((item.mediaUrls || []).join("; ")), // Join multiple images with semicolon
+        escape((item.mediaUrls || []).join("; ")),
+        escape(item.videoUrl || ""),
         escape(`https://twitter.com/i/web/status/${item.id}`),
       ].join(",");
     });
@@ -70,88 +72,113 @@ export const exportData = async (formatType: "json" | "jsonl" | "csv") => {
 export const downloadMediaZip = async (
   items: TweetItem[],
   authorHandle: string,
-  onProgress: (current: number, total: number) => void // <--- NEW CALLBACK
+  onProgress: (current: number, total: number) => void
 ) => {
   const zip = new JSZip();
   const folderName = `${authorHandle}_media`;
   const folder = zip.folder(folderName);
 
-  // 1. Calculate REAL total (account for multiple images per tweet)
+  // Filter items that have ANY media
   const mediaItems = items.filter(
-    (i) => i.mediaUrl || (i.mediaUrls && i.mediaUrls.length > 0)
+    (i) => i.videoUrl || i.mediaUrl || (i.mediaUrls && i.mediaUrls.length > 0)
   );
 
-  let totalImages = 0;
+  let totalFiles = 0;
   mediaItems.forEach((item) => {
-    const count =
-      item.mediaUrls && item.mediaUrls.length > 0
-        ? item.mediaUrls.length
-        : item.mediaUrl
-        ? 1
-        : 0;
-    totalImages += count;
+    if (item.videoUrl) {
+      totalFiles += 1;
+    } else {
+      // Count of images
+      const count =
+        item.mediaUrls && item.mediaUrls.length > 0
+          ? item.mediaUrls.length
+          : item.mediaUrl
+          ? 1
+          : 0;
+      totalFiles += count;
+    }
   });
 
-  if (totalImages === 0) {
-    alert("No images found for this user.");
+  if (totalFiles === 0) {
+    alert("No media found for this user.");
     return 0;
   }
 
   let processedCount = 0;
   let successCount = 0;
 
-  // Initial progress update
-  onProgress(0, totalImages);
+  // Update initial UI
+  onProgress(0, totalFiles);
 
-  const batchSize = 5;
+  const batchSize = 3;
 
   for (let i = 0; i < mediaItems.length; i += batchSize) {
     const batch = mediaItems.slice(i, i + batchSize);
 
     await Promise.all(
       batch.map(async (item) => {
-        const urls =
-          item.mediaUrls && item.mediaUrls.length > 0
-            ? item.mediaUrls
-            : item.mediaUrl
-            ? [item.mediaUrl]
-            : [];
+        // LOGIC: If Video exists, download ONLY the video. Else, download images.
 
-        await Promise.all(
-          urls.map(async (url, index) => {
-            try {
-              const response = await fetch(url);
-              if (!response.ok) throw new Error("Network error");
-              const blob = await response.blob();
+        if (item.videoUrl) {
+          // --- VIDEO DOWNLOAD ---
+          try {
+            const response = await fetch(item.videoUrl);
+            if (!response.ok) throw new Error("Network error");
+            const blob = await response.blob();
 
-              let ext = "jpg";
-              const type = blob.type.split("/")[1];
-              if (type) ext = type;
+            // Filename: handle_date_tweetID.mp4
+            const dateStr = format(item.createdAt, "yyyy-MM-dd");
+            const filename = `${item.authorHandle}_${dateStr}_${item.id}.mp4`;
 
-              const dateStr = format(item.createdAt, "yyyy-MM-dd");
-              // Add index to filename if multiple images exist
-              const suffix = urls.length > 1 ? `_${index + 1}` : "";
-              const filename = `${item.authorHandle}_${dateStr}_${item.id}${suffix}.${ext}`;
+            folder?.file(filename, blob);
+            successCount++;
+          } catch (err) {
+            console.error(`Failed to download video ${item.videoUrl}`, err);
+          } finally {
+            processedCount++;
+            onProgress(processedCount, totalFiles);
+          }
+        } else {
+          // --- IMAGE DOWNLOAD ---
+          const urls =
+            item.mediaUrls && item.mediaUrls.length > 0
+              ? item.mediaUrls
+              : item.mediaUrl
+              ? [item.mediaUrl]
+              : [];
 
-              folder?.file(filename, blob);
-              successCount++;
-            } catch (err) {
-              console.error(`Failed to download ${url}`, err);
-            } finally {
-              // Update progress regardless of success/fail
-              processedCount++;
-              onProgress(processedCount, totalImages);
-            }
-          })
-        );
+          await Promise.all(
+            urls.map(async (url, index) => {
+              try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Network error");
+                const blob = await response.blob();
+
+                let ext = "jpg";
+                const type = blob.type.split("/")[1];
+                if (type) ext = type;
+
+                const dateStr = format(item.createdAt, "yyyy-MM-dd");
+                const suffix = urls.length > 1 ? `_${index + 1}` : "";
+                const filename = `${item.authorHandle}_${dateStr}_${item.id}${suffix}.${ext}`;
+
+                folder?.file(filename, blob);
+                successCount++;
+              } catch (err) {
+                console.error(`Failed to download image ${url}`, err);
+              } finally {
+                processedCount++;
+                onProgress(processedCount, totalFiles);
+              }
+            })
+          );
+        }
       })
     );
   }
 
   if (successCount === 0) {
-    throw new Error(
-      "Failed to download images. This might be due to CORS security."
-    );
+    throw new Error("Failed to download media.");
   }
 
   const content = await zip.generateAsync({ type: "blob" });

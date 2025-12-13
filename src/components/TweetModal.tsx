@@ -72,9 +72,20 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
           <X size={20} />
         </button>
 
-        {/* LEFT SIDE: IMAGE GALLERY */}
+        {/* LEFT SIDE: MEDIA VIEWER */}
         <div className="flex-1 bg-black flex items-center justify-center relative overflow-hidden group min-h-1/2">
-          {images.length > 0 ? (
+          {/* VIDEO */}
+          {tweet.videoUrl ? (
+            <video
+              src={tweet.videoUrl}
+              poster={tweet.mediaUrl}
+              controls
+              autoPlay
+              loop
+              className="max-h-full max-w-full object-contain focus:outline-none"
+            />
+          ) : images.length > 0 ? (
+            /* IMAGE */
             <>
               <img
                 src={images[currentImageIndex]}
@@ -108,6 +119,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
               )}
             </>
           ) : (
+            /* TEXT ONLY */
             <div className="text-slate-500 flex flex-col items-center">
               <span className="text-4xl mb-2">📄</span>
               <span className="text-sm">Text Only Post</span>

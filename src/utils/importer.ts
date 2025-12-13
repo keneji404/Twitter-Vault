@@ -9,7 +9,29 @@ interface ImportEntry {
   username?: string;
   screen_name?: string;
   avatar_url?: string;
-  media_items?: { media_url_https: string; type: string }[];
+  media_items?: {
+    media_url_https: string;
+    type: string;
+    video_info?: {
+      variants: {
+        bitrate?: number;
+        content_type: string;
+        url: string;
+      }[];
+    };
+  }[];
+  extended_entities?: {
+    media?: {
+      media_url_https: string;
+      video_info?: {
+        variants: {
+          bitrate?: number;
+          content_type: string;
+          url: string;
+        }[];
+      };
+    }[];
+  };
 
   // Internal Backup keys
   id?: string;
@@ -20,6 +42,7 @@ interface ImportEntry {
   avatarUrl?: string;
   mediaUrl?: string;
   mediaUrls?: string[];
+  videoUrl?: string;
   type?: "bookmark" | "like";
 
   [key: string]: any;
@@ -84,10 +107,34 @@ export const processTwillotJson = async (file: File) => {
 
     // --- Media Logic ---
     let mediaUrls: string[] = [];
+    let videoUrl: string | undefined = entry.videoUrl;
+
+    // Helper to extract video from a media object
+    const findBestVideo = (mediaItem: any) => {
+      if (mediaItem.video_info && mediaItem.video_info.variants) {
+        const variants = mediaItem.video_info.variants;
+        // Filter for MP4s and sort by highest bitrate
+        const best = variants
+          .filter((v: any) => v.content_type === "video/mp4")
+          .sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0))[0];
+
+        if (best) return best.url;
+      }
+      return undefined;
+    };
+
     if (entry.mediaUrls && Array.isArray(entry.mediaUrls)) {
       mediaUrls = entry.mediaUrls;
     } else if (entry.media_items && Array.isArray(entry.media_items)) {
       mediaUrls = entry.media_items.map((m: any) => m.media_url_https);
+      // Check for video in media_items
+      if (!videoUrl) videoUrl = findBestVideo(entry.media_items[0]);
+    } else if (entry.extended_entities && entry.extended_entities.media) {
+      // Check for video in extended_entities (Standard Twitter JSON)
+      mediaUrls = entry.extended_entities.media.map(
+        (m: any) => m.media_url_https
+      );
+      if (!videoUrl) videoUrl = findBestVideo(entry.extended_entities.media[0]);
     }
     const mediaUrl = entry.mediaUrl || mediaUrls[0];
 
@@ -100,6 +147,7 @@ export const processTwillotJson = async (file: File) => {
       avatarUrl,
       mediaUrl,
       mediaUrls,
+      videoUrl,
       type: (entry.type as "bookmark" | "like") || "bookmark",
       isDeleted: 0,
       jsonBlob: entry,

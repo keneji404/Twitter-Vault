@@ -114,6 +114,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
-<p align="center">
+<!-- <p align="center">
 <small>keneji @2025</small>
-</p>
+</p> -->

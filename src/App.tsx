@@ -380,7 +380,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       {/* HEADER */}
-      <header className="p-6 border-b border-slate-800 sticky top-0 bg-slate-950/90 backdrop-blur z-20">
+      <header className="py-3 sm:py-6 px-6 border-b border-slate-800 sticky top-0 bg-slate-950/90 backdrop-blur z-20">
         <div className="flex flex-wrap gap-4 justify-between items-center">
           <div className="flex items-center gap-4">
             {selectedAuthor ? (

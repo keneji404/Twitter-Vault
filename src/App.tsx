@@ -350,7 +350,7 @@ function App() {
           isOpen: true,
           type: "success",
           title: "Download Complete",
-          message: `Successfully zipped ${count} images for @${selectedAuthor}.`,
+          message: `Successfully zipped ${count} images from @${selectedAuthor}.`,
           onConfirm: closeDialog,
         });
       } catch (error: any) {
@@ -708,7 +708,7 @@ function App() {
           <>
             {/* GRID */}
             {layout === "grid" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {visibleFeed.map((item) => (
                   <div
                     key={item.id}
@@ -969,10 +969,17 @@ function App() {
             )}
 
             {filteredItems.length === 0 && (
-              <div className="col-span-full text-center py-20 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
-                <h3 className="text-lg text-slate-300 font-medium">
+              <div className="col-span-full flex flex-col items-center justify-center py-24 text-center rounded-xl border border-dashed border-slate-800 bg-slate-900/50">
+                <h3 className="text-lg font-semibold text-white mb-1">
                   No {filterType}s found
                 </h3>
+                <p className="text-slate-400 max-w-sm text-sm">
+                  {search
+                    ? `We couldn't find anything matching "${search}"`
+                    : selectedAuthor
+                    ? "No data found for this author."
+                    : "Import your Twitter archive to get started."}
+                </p>
               </div>
             )}
           </>
@@ -981,7 +988,7 @@ function App() {
         {/* --- VIEW: AUTHORS --- */}
         {viewMode === "authors" && !selectedAuthor && (
           <>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {visibleAuthors.map((group) => (
                 <button
                   key={group.handle}
@@ -1027,10 +1034,15 @@ function App() {
             )}
 
             {authorGroups.length === 0 && (
-              <div className="col-span-full text-center py-20 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
-                <h3 className="text-lg text-slate-300 font-medium">
+              <div className="col-span-full flex flex-col items-center justify-center py-24 text-center rounded-xl border border-dashed border-slate-800 bg-slate-900/50">
+                <h3 className="text-lg font-semibold text-white mb-1">
                   No authors found
                 </h3>
+                <p className="text-slate-400 max-w-sm text-sm">
+                  {search
+                    ? `We couldn't find anything matching "${search}"`
+                    : "Import your Twitter archive to get started."}
+                </p>
               </div>
             )}
           </>

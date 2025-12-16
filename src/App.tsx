@@ -29,6 +29,7 @@ import {
   Bookmark,
   Heart,
   Play,
+  ArrowUp,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -84,6 +85,7 @@ function App() {
   });
 
   const closeDialog = () => setDialog((prev) => ({ ...prev, isOpen: false }));
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // --- Effects ---
 
@@ -152,6 +154,21 @@ function App() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [selectedAuthor]);
+
+  // Track Scroll Position for Back to top button
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show button if scrolled more than 400px
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Scroll to Top Function
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
 
   // --- Data Logic ---
   const allItems = useLiveQuery(async () => {
@@ -689,164 +706,6 @@ function App() {
         {/* --- VIEW: OPTIONS --- */}
         {viewMode !== "activity" && (viewMode === "feed" || selectedAuthor) && (
           <>
-            {/* GALLERY */}
-            {layout === "gallery" && (
-              <div className="flex gap-4 items-start">
-                {galleryColumns.map((col, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-4 flex-1">
-                    {col.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => setSelectedTweet(item)}
-                        className="group relative rounded-xl overflow-hidden bg-slate-900 border border-slate-800 cursor-pointer"
-                      >
-                        <img
-                          src={item.mediaUrl}
-                          alt="Gallery"
-                          className="w-full h-auto object-cover hover:scale-105 transition duration-500"
-                          loading="lazy"
-                        />
-                        {item.videoUrl && (
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 backdrop-blur-sm pointer-events-none group-hover:scale-110 transition">
-                            <Play size={32} fill="rgba(0,0,0,0.5)" />
-                          </div>
-                        )}
-                        {(item.mediaUrls?.length || 0) > 1 && (
-                          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm pointer-events-none z-10">
-                            <SquareStack size={12} /> {item.mediaUrls?.length}
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                          <div className="text-white text-sm font-bold truncate">
-                            {item.authorName}
-                          </div>
-                          <div className="flex gap-2 mt-2">
-                            <a
-                              href={`https://twitter.com/${item.authorHandle}/status/${item.id}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition"
-                            >
-                              <ExternalLink size={14} />
-                            </a>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(item.id);
-                              }}
-                              className="bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full transition"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(item.id);
-                          }}
-                          className="absolute top-2 left-2 bg-black/50 hover:bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition backdrop-blur-md"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* LIST */}
-            {layout === "list" && (
-              <div className="flex flex-col gap-2">
-                {visibleFeed.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => setSelectedTweet(item)}
-                    className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-3 rounded-lg hover:border-slate-700 transition group h-24 cursor-pointer"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
-                      <img
-                        src={
-                          item.avatarUrl ||
-                          `https://unavatar.io/twitter/${item.authorHandle}`
-                        }
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
-                        }}
-                      />
-                      {item.videoUrl && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
-                          <Play
-                            size={20}
-                            className="text-white drop-shadow-md"
-                            fill="rgba(0,0,0,0.5)"
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col justify-center h-full">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold text-white truncate text-sm">
-                          {item.authorName}
-                        </span>
-                        <span className="text-slate-500 text-xs">
-                          @{item.authorHandle}
-                        </span>
-                      </div>
-                      <p className="text-slate-300 text-sm truncate pr-4">
-                        {item.fullText}
-                      </p>
-                    </div>
-                    {item.mediaUrl ? (
-                      <div className="w-16 h-16 shrink-0 rounded-md border border-slate-700 bg-slate-800 overflow-hidden hover:opacity-80 transition relative">
-                        <img
-                          src={item.mediaUrl}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        {(item.mediaUrls?.length || 0) > 1 && (
-                          <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] font-bold px-1 rounded flex items-center gap-0.5 pointer-events-none">
-                            <SquareStack size={10} /> {item.mediaUrls?.length}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-16 h-16 shrink-0" />
-                    )}
-                    <div className="w-24 shrink-0 flex flex-col items-end justify-center gap-1">
-                      <span className="text-slate-600 text-xs font-mono">
-                        {safeFormat(item.createdAt, "MMM d, yy")}
-                      </span>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                        <a
-                          href={`https://twitter.com/${item.authorHandle}/status/${item.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-blue-400 hover:text-blue-300"
-                        >
-                          <ExternalLink size={14} />
-                        </a>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(item.id);
-                          }}
-                          className="text-slate-500 hover:text-red-400"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
             {/* GRID */}
             {layout === "grid" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -865,7 +724,7 @@ function App() {
                           loading="lazy"
                         />
                         {item.videoUrl && (
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 backdrop-blur-sm pointer-events-none group-hover:bg-blue-400/80 transition">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 backdrop-blur-sm pointer-events-none group-hover:bg-blue-600/80 transition">
                             <Play
                               size={32}
                               strokeWidth={1}
@@ -931,6 +790,168 @@ function App() {
                         </button>
                       </div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* LIST */}
+            {layout === "list" && (
+              <div className="flex flex-col gap-2">
+                {visibleFeed.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setSelectedTweet(item)}
+                    className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-3 rounded-lg hover:border-slate-700 transition group h-24 cursor-pointer"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
+                      <img
+                        src={
+                          item.avatarUrl ||
+                          `https://unavatar.io/twitter/${item.authorHandle}`
+                        }
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-center h-full">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-white truncate text-sm">
+                          {item.authorName}
+                        </span>
+                        <span className="text-slate-500 text-xs">
+                          @{item.authorHandle}
+                        </span>
+                      </div>
+                      <p className="text-slate-300 text-sm truncate pr-4">
+                        {item.fullText}
+                      </p>
+                    </div>
+                    {item.mediaUrl ? (
+                      <div className="w-16 h-16 shrink-0 rounded-md border border-slate-700 bg-slate-800 overflow-hidden hover:opacity-80 transition relative">
+                        <img
+                          src={item.mediaUrl}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        {item.videoUrl && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                            <Play
+                              size={20}
+                              className="text-white drop-shadow-md"
+                              fill="rgba(0,0,0,0.5)"
+                            />
+                          </div>
+                        )}
+                        {(item.mediaUrls?.length || 0) > 1 && (
+                          <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] font-bold px-1 rounded flex items-center gap-0.5 pointer-events-none">
+                            <SquareStack size={10} /> {item.mediaUrls?.length}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 shrink-0" />
+                    )}
+                    <div className="w-24 shrink-0 flex flex-col items-end justify-center gap-1">
+                      <span className="text-slate-600 text-xs font-mono">
+                        {safeFormat(item.createdAt, "MMM d, yy")}
+                      </span>
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                        <a
+                          href={`https://twitter.com/${item.authorHandle}/status/${item.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-blue-400 hover:text-blue-300"
+                        >
+                          <ExternalLink size={14} />
+                        </a>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(item.id);
+                          }}
+                          className="text-slate-500 hover:text-red-400"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* GALLERY */}
+            {layout === "gallery" && (
+              <div className="flex gap-4 items-start">
+                {galleryColumns.map((col, colIndex) => (
+                  <div key={colIndex} className="flex flex-col gap-4 flex-1">
+                    {col.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => setSelectedTweet(item)}
+                        className="group relative rounded-xl overflow-hidden bg-slate-900 border border-slate-800 cursor-pointer"
+                      >
+                        <img
+                          src={item.mediaUrl}
+                          alt="Gallery"
+                          className="w-full h-auto object-cover hover:scale-105 transition duration-500"
+                          loading="lazy"
+                        />
+                        {item.videoUrl && (
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 backdrop-blur-sm pointer-events-none group-hover:scale-110 transition">
+                            <Play
+                              size={32}
+                              strokeWidth={1}
+                              fill="rgba(0,0,0,0.5)"
+                            />
+                          </div>
+                        )}
+                        {(item.mediaUrls?.length || 0) > 1 && (
+                          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm pointer-events-none z-10">
+                            <SquareStack size={12} /> {item.mediaUrls?.length}
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                          <div className="text-white text-sm font-bold truncate">
+                            {item.authorName}
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <a
+                              href={`https://twitter.com/${item.authorHandle}/status/${item.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition"
+                            >
+                              <ExternalLink size={14} />
+                            </a>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(item.id);
+                              }}
+                              className="bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full transition"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(item.id);
+                          }}
+                          className="absolute top-2 left-2 bg-black/50 hover:bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition backdrop-blur-md"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
@@ -1064,6 +1085,19 @@ function App() {
           design.
         </p>
       </footer>
+
+      {/* SCROLL TO TOP BUTTON */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-xl z-40 transition-all duration-300 ${
+          showScrollTop
+            ? "translate-y-0 opacity-100"
+            : "translate-y-10 opacity-0 pointer-events-none"
+        }`}
+        aria-label="Back to top"
+      >
+        <ArrowUp size={24} />
+      </button>
     </div>
   );
 }

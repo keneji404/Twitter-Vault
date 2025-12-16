@@ -24,6 +24,9 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
       ? [tweet.mediaUrl]
       : [];
 
+  // Check if there is a video in a post
+  const isVideoSlide = tweet.videoUrl && currentImageIndex === 0;
+
   // Lock Body Scroll
   useEffect(() => {
     // Disable scrolling on the background
@@ -44,7 +47,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentImageIndex]);
+  }, [currentImageIndex, images.length]);
 
   const nextImage = () => {
     if (currentImageIndex < images.length - 1)
@@ -74,24 +77,26 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
 
         {/* LEFT SIDE: MEDIA VIEWER */}
         <div className="flex-1 bg-black flex items-center justify-center relative overflow-hidden group min-h-1/2">
-          {/* VIDEO */}
-          {tweet.videoUrl ? (
-            <video
-              src={tweet.videoUrl}
-              poster={tweet.mediaUrl}
-              controls
-              autoPlay
-              loop
-              className="max-h-full max-w-full object-contain focus:outline-none"
-            />
-          ) : images.length > 0 ? (
-            /* IMAGE */
+          {images.length > 0 ? (
             <>
-              <img
-                src={images[currentImageIndex]}
-                alt="Post Media"
-                className="max-h-full max-w-full object-contain"
-              />
+              {/* VIDEO */}
+              {isVideoSlide ? (
+                <video
+                  src={tweet.videoUrl}
+                  poster={images[0]}
+                  controls
+                  autoPlay
+                  loop
+                  className="max-h-full max-w-full object-contain focus:outline-none"
+                />
+              ) : (
+                /* IMAGE */
+                <img
+                  src={images[currentImageIndex]}
+                  alt={`Slide ${currentImageIndex + 1}`}
+                  className="max-h-full max-w-full object-contain"
+                />
+              )}
 
               {/* Navigation Arrows (Only if multiple images) */}
               {images.length > 1 && (
@@ -99,27 +104,27 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
                   <button
                     onClick={prevImage}
                     disabled={currentImageIndex === 0}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white/20 text-white p-2 rounded-full disabled:opacity-0 transition"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-white/20 text-white p-2 rounded-full disabled:opacity-0 transition"
                   >
                     <ChevronLeft size={32} />
                   </button>
                   <button
                     onClick={nextImage}
                     disabled={currentImageIndex === images.length - 1}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white/20 text-white p-2 rounded-full disabled:opacity-0 transition"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-white/20 text-white p-2 rounded-full disabled:opacity-0 transition"
                   >
                     <ChevronRight size={32} />
                   </button>
 
                   {/* Image Counter */}
-                  <div className="absolute bottom-4 bg-black/60 text-white text-xs px-3 py-1 rounded-full font-mono">
+                  <div className="absolute top-4 left-4 bg-black/60 text-white text-xs px-3 py-1 mt-1.5 rounded-full font-mono">
                     {currentImageIndex + 1} / {images.length}
                   </div>
                 </>
               )}
             </>
           ) : (
-            /* TEXT ONLY */
+            // TEXT ONLY
             <div className="text-slate-500 flex flex-col items-center">
               <span className="text-4xl mb-2">📄</span>
               <span className="text-sm">Text Only Post</span>

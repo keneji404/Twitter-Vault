@@ -16,7 +16,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 - **Organizer:** Group tweets by Author to see everything you've saved from a specific user.
 - **Media Viewer:** Built-in lightbox to view high-res images and carousels.
 - **Data Management:**
-  - Import JSON/JSONL using 3rd party bookmark exporters.
+  - Import JSON/JSONL using [Twitter Web Exporter](https://github.com/prinsss/twitter-web-exporter).
   - Export to JSON (Backup), JSONL, or CSV (Spreadsheet).
   - Soft delete unwanted items.
   - Download a zip copy of saved bookmarks from a specific profile.
@@ -68,23 +68,31 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 
 ### Usage Guide
 
-#### 1. Getting your Data
+This app is designed to work best with bookmark exporters that provide clean JSON/JSONL exports, I recommend [Twitter Web Exporter](https://github.com/prinsss/twitter-web-exporter) which is free and open source.
 
-This app is designed to work best with data exported via third-party bookmark exporters that provide clean JSON/JSONL exports.
+#### 1. Installing Twitter Web Exporter
+
+1. Install the browser extension [Tampermonkey](https://www.tampermonkey.net/).
+2. Download the latest Twitter Web Exporter [here](https://github.com/prinsss/twitter-web-exporter/releases/latest/download/twitter-web-exporter.user.js).
+3. Open Tampermonkey's dashboard through browser extension menu.
+4. Drag and drop the `.js` file into the dashboard.
+5. Open your Twitter bookmarks/likes page and it will start fetching automatically.
+
+#### 2. Getting your Data
 
 1.  Export your Bookmarks or Likes as a `.json` or `.jsonl` file.
 2.  Open **Twitter Vault**.
 3.  Click the **Import** button in the top right.
 4.  Select your file. The app will process the data and store it in your browser.
 
-#### 2. Browsing
+#### 3. Browsing
 
 - Use the **Search Bar** to find specific text.
 - Toggle between **Bookmarks** and **Likes** using the tabs.
 - Click the **Layout Icons** (Grid, List, Gallery) to change how tweets are displayed.
 - Click "Authors" to see a leaderboard of who you bookmark the most.
 
-#### 3. Backup & Restore
+#### 4. Backup & Restore
 
 - **Export:** Click the "Export" button to save a clean backup of your current database. This includes any items you've deleted or organized.
 - **Reset:** Use the "Reset Database" button to wipe the local storage and start fresh.

@@ -3,6 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, type TweetItem } from "./db/db";
 import { processTwillotJson } from "./utils/importer";
 import { exportData, downloadMediaZip } from "./utils/exporter";
+import { MediaMosaic } from "./components/MediaMosaic";
 import { ActivityGraph } from "./components/ActivityGraph";
 import { TweetModal } from "./components/TweetModal";
 import { ConfirmModal, type ModalType } from "./components/ConfirmModal";
@@ -89,7 +90,7 @@ function App() {
 
   // --- Effects ---
 
-  // 1. Handle Browser Back Button
+  // Handle Browser Back Button
   useEffect(() => {
     const handlePopState = () => {
       // Handles modal close button history
@@ -111,7 +112,7 @@ function App() {
     //selectedTweet
   ]);
 
-  // 2. Click Outside Export Menu
+  // Click Outside Export Menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -125,7 +126,7 @@ function App() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 3. Responsive Column Listener
+  // Responsive Column Listener
   useEffect(() => {
     const updateCols = () => {
       const w = window.innerWidth;
@@ -139,14 +140,14 @@ function App() {
     return () => window.removeEventListener("resize", updateCols);
   }, []);
 
-  // 4. Reset everything during filter or search
+  // Reset everything during filter or search
   useEffect(() => {
     setVisibleFeedCount(ITEMS_PER_PAGE);
     setVisibleAuthorsCount(ITEMS_PER_PAGE);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [search, filterType]);
 
-  // 5. Reset Feed only when selecting an author (Drill Down)
+  // Reset Feed only when selecting an author (Drill Down)
   // Authors count will also be preserved
   useEffect(() => {
     if (selectedAuthor) {
@@ -343,7 +344,7 @@ function App() {
         const count = await downloadMediaZip(
           filteredItems,
           selectedAuthor,
-          (current, total) => setZipProgress({ current, total }) // <--- Callback updates state
+          (current, total) => setZipProgress({ current, total })
         );
 
         setDialog({
@@ -467,7 +468,7 @@ function App() {
 
                 {showExportMenu && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
-                    {/* 1. Download Images Option (Only visible if Author selected) */}
+                    {/* Download Images Option (Only visible if Author selected) */}
                     {selectedAuthor && (
                       <>
                         <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
@@ -487,7 +488,7 @@ function App() {
                       </>
                     )}
 
-                    {/* 2. Export Backup Options */}
+                    {/* Export Backup Options */}
                     <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50">
                       Data Backup
                     </div>
@@ -715,28 +716,10 @@ function App() {
                     onClick={() => setSelectedTweet(item)}
                     className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 transition group flex flex-col shadow-sm cursor-pointer"
                   >
-                    {item.mediaUrl && (
-                      <div className="h-48 overflow-hidden bg-slate-800 relative">
-                        <img
-                          src={item.mediaUrl}
-                          alt="Media"
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        {item.videoUrl && (
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 backdrop-blur-sm pointer-events-none group-hover:bg-blue-600/80 transition">
-                            <Play
-                              size={32}
-                              strokeWidth={1}
-                              fill="rgba(0,0,0,0.5)"
-                            />
-                          </div>
-                        )}
-                        {(item.mediaUrls?.length || 0) > 1 && (
-                          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
-                            <SquareStack size={12} /> {item.mediaUrls?.length}
-                          </div>
-                        )}
+                    {(item.mediaUrl ||
+                      (item.mediaUrls && item.mediaUrls.length > 0)) && (
+                      <div className="h-48 overflow-hidden bg-gray-100 dark:bg-slate-800 relative">
+                        <MediaMosaic item={item} />
                       </div>
                     )}
                     <div className="p-5 flex-1 flex flex-col">
@@ -903,7 +886,7 @@ function App() {
                           loading="lazy"
                         />
                         {item.videoUrl && (
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 backdrop-blur-sm pointer-events-none group-hover:scale-110 transition">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 backdrop-blur-sm pointer-events-none group-hover:scale-110 group-hover:bg-blue-600/80 transition">
                             <Play
                               size={32}
                               strokeWidth={1}
@@ -977,8 +960,8 @@ function App() {
                   {search
                     ? `We couldn't find anything matching "${search}"`
                     : selectedAuthor
-                    ? "No data found for this author."
-                    : "Import your Twitter archive to get started."}
+                      ? "No data found for this author."
+                      : "Import your Twitter archive to get started."}
                 </p>
               </div>
             )}

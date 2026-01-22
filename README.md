@@ -16,7 +16,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 - **Organizer:** Group tweets by Author to see everything you've saved from a specific user.
 - **Media Viewer:** Built-in lightbox to view high-res images and carousels.
 - **Data Management:**
-  - Import JSON/JSONL using [Twitter Web Exporter](https://github.com/prinsss/twitter-web-exporter).
+  - Import bookmarks/likes using JSON/JSONL exports from [Twitter Web Exporter](https://github.com/prinsss/twitter-web-exporter).
   - Export to JSON (Backup), JSONL, or CSV (Spreadsheet).
   - Soft delete unwanted items.
   - Download a zip copy of saved bookmarks from a specific profile.

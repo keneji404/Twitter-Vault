@@ -75,7 +75,7 @@ This app is designed to work best with bookmark exporters that provide clean JSO
 1. Install the browser extension [Tampermonkey](https://www.tampermonkey.net/).
 2. Download the latest Twitter Web Exporter [here](https://github.com/prinsss/twitter-web-exporter/releases/latest/download/twitter-web-exporter.user.js).
 3. Open Tampermonkey's dashboard through browser extension menu.
-4. Drag and drop the `.js` file into the dashboard.
+4. Drag and drop the `.js` file into the dashboard and click install.
 5. Open your Twitter bookmarks/likes page and it will start fetching automatically.
 
 #### 2. Getting your Data

@@ -21,8 +21,8 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
     tweet.mediaUrls && tweet.mediaUrls.length > 0
       ? tweet.mediaUrls
       : tweet.mediaUrl
-      ? [tweet.mediaUrl]
-      : [];
+        ? [tweet.mediaUrl]
+        : [];
 
   // Check if there is a video in a post
   const isVideoSlide = tweet.videoUrl && currentImageIndex === 0;
@@ -83,7 +83,7 @@ export const TweetModal = ({ tweet, onClose }: Props) => {
               {isVideoSlide ? (
                 <video
                   src={tweet.videoUrl}
-                  poster={images[0]}
+                  poster={tweet.mediaUrl}
                   controls
                   autoPlay
                   loop

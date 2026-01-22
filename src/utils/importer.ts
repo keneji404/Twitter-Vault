@@ -1,40 +1,24 @@
 import { db, type TweetItem } from "../db/db";
 
 interface ImportEntry {
-  // Twillot keys
-  tweet_id?: string;
-  full_text?: string;
-  text?: string;
-  created_at?: number | string;
-  username?: string;
-  screen_name?: string;
-  avatar_url?: string;
-  media_items?: {
-    media_url_https: string;
-    type: string;
-    video_info?: {
-      variants: {
-        bitrate?: number;
-        content_type: string;
-        url: string;
-      }[];
-    };
-  }[];
-  extended_entities?: {
-    media?: {
-      media_url_https: string;
-      video_info?: {
-        variants: {
-          bitrate?: number;
-          content_type: string;
-          url: string;
-        }[];
-      };
-    }[];
-  };
-
-  // Internal Backup keys
+  // Twitter Web Exporter (TWE) Keys
   id?: string;
+  created_at?: string;
+  full_text?: string;
+  screen_name?: string;
+  name?: string;
+  profile_image_url?: string;
+  bookmarked?: boolean;
+  favorited?: boolean;
+  media?: {
+    type: "photo" | "video" | "animated_gif";
+    url: string;
+    thumbnail: string; // jpg thumbnail
+    original: string; // original quality images (including videos)
+  }[];
+
+  // Internal Backup Keys
+  tweetId?: string;
   fullText?: string;
   createdAt?: string | Date;
   authorHandle?: string;
@@ -80,63 +64,69 @@ export const processTwillotJson = async (file: File) => {
   }
 
   const itemsToSave: TweetItem[] = dataArray.map((entry) => {
-    // --- ID Logic ---
-    let rawId = entry.tweet_id || entry.id || "unknown_id";
-    if (rawId.startsWith("bookmark_")) {
-      const parts = rawId.split("_");
-      rawId = parts[parts.length - 1];
-    }
-    const id = rawId;
+    // ID
+    const id = entry.id || entry.tweetId || "unknown_id";
 
-    // --- Text Logic ---
-    const fullText = entry.fullText || entry.full_text || entry.text || "";
+    // TEXT
+    const fullText = entry.fullText || entry.full_text || "";
 
-    // --- Date Logic ---
+    // DATE
     let createdAt = new Date();
     if (entry.createdAt) {
       createdAt = new Date(entry.createdAt);
     } else if (entry.created_at) {
-      const ts = Number(entry.created_at);
-      createdAt = new Date(ts < 10000000000 ? ts * 1000 : ts);
+      createdAt = new Date(entry.created_at);
     }
 
-    // --- Author Logic ---
+    // AUTHOR
     const authorHandle = entry.authorHandle || entry.screen_name || "Unknown";
-    const authorName = entry.authorName || entry.username || "Twitter User";
-    const avatarUrl = entry.avatarUrl || entry.avatar_url;
+    const authorName = entry.authorName || entry.name || "Twitter User";
+    const avatarUrl = entry.avatarUrl || entry.profile_image_url;
 
-    // --- Media Logic ---
+    // TYPE
+    let type: "bookmark" | "like" | "tweet" = "bookmark";
+    if (entry.type) {
+      type = entry.type;
+    } else {
+      if (entry.bookmarked) type = "bookmark";
+      else if (entry.favorited) type = "like";
+    }
+
+    // MEDIA LOGIC
     let mediaUrls: string[] = [];
-    let videoUrl: string | undefined = entry.videoUrl;
+    let mediaUrl: string | undefined = undefined;
+    let videoUrl: string | undefined = undefined;
 
-    // Helper to extract video from a media object
-    const findBestVideo = (mediaItem: any) => {
-      if (mediaItem.video_info && mediaItem.video_info.variants) {
-        const variants = mediaItem.video_info.variants;
-        // Filter for MP4s and sort by highest bitrate
-        const best = variants
-          .filter((v: any) => v.content_type === "video/mp4")
-          .sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0))[0];
-
-        if (best) return best.url;
-      }
-      return undefined;
-    };
-
+    // Check Internal Backup First
     if (entry.mediaUrls && Array.isArray(entry.mediaUrls)) {
       mediaUrls = entry.mediaUrls;
-    } else if (entry.media_items && Array.isArray(entry.media_items)) {
-      mediaUrls = entry.media_items.map((m: any) => m.media_url_https);
-      // Check for video in media_items
-      if (!videoUrl) videoUrl = findBestVideo(entry.media_items[0]);
-    } else if (entry.extended_entities && entry.extended_entities.media) {
-      // Check for video in extended_entities (Standard Twitter JSON)
-      mediaUrls = entry.extended_entities.media.map(
-        (m: any) => m.media_url_https
-      );
-      if (!videoUrl) videoUrl = findBestVideo(entry.extended_entities.media[0]);
+      mediaUrl = entry.mediaUrl;
+      videoUrl = entry.videoUrl;
     }
-    const mediaUrl = entry.mediaUrl || mediaUrls[0];
+    // Check Twitter Web Exporter Format
+    else if (
+      entry.media &&
+      Array.isArray(entry.media) &&
+      entry.media.length > 0
+    ) {
+      mediaUrls = entry.media.map((m) => {
+        if (m.type === "video" || m.type === "animated_gif") {
+          return m.thumbnail;
+        }
+        return m.original || m.thumbnail;
+      });
+
+      // Set Main Thumbnail (First Item)
+      mediaUrl = mediaUrls[0];
+
+      // Extract Video URL
+      const videoEntry = entry.media.find(
+        (m) => m.type === "video" || m.type === "animated_gif",
+      );
+      if (videoEntry) {
+        videoUrl = videoEntry.original;
+      }
+    }
 
     return {
       id,
@@ -148,7 +138,7 @@ export const processTwillotJson = async (file: File) => {
       mediaUrl,
       mediaUrls,
       videoUrl,
-      type: (entry.type as "bookmark" | "like") || "bookmark",
+      type,
       isDeleted: 0,
       jsonBlob: entry,
     };

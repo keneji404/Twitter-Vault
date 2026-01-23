@@ -16,7 +16,7 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 - **Organizer:** Group tweets by Author to see everything you've saved from a specific user.
 - **Media Viewer:** Built-in lightbox to view high-res images and carousels.
 - **Data Management:**
-  - Import bookmarks/likes using `.json` exports from [Twitter Web Exporter](https://github.com/prinsss/twitter-web-exporter).
+  - Import bookmarks/likes.
   - Export to `.json`, `.jsonl`, or `.csv`.
   - Soft delete unwanted items.
   - Download a zip copy of saved bookmarks from a specific profile.
@@ -68,9 +68,9 @@ Twitter Vault allows you to take control of your data. It imports your backed-up
 
 ### Usage Guide
 
-This app is designed to work best with bookmark exporters that provide clean JSON/JSONL exports, I recommend [Twitter Web Exporter](https://github.com/prinsss/twitter-web-exporter) which is free and open source.
+This app is designed to work best with bookmark exporters that provide a clean `.json` / `.jsonl` file, I recommend [Twitter Web Exporter](https://github.com/prinsss/twitter-web-exporter) or [Twillot](https://www.twillot.com/en).
 
-#### 1. Installing Twitter Web Exporter
+#### Option 1. Twitter Web Exporter (Manual Fetching)
 
 1. Install the browser extension [Tampermonkey](https://www.tampermonkey.net/).
 2. Download the latest Twitter Web Exporter [here](https://github.com/prinsss/twitter-web-exporter/releases/latest/download/twitter-web-exporter.user.js).
@@ -78,21 +78,33 @@ This app is designed to work best with bookmark exporters that provide clean JSO
 4. Drag and drop the `.js` file into the dashboard and click install.
 5. Open your Twitter bookmarks/likes page and it will start fetching automatically.
 
-#### 2. Getting your Data
+#### Option 2. Twillot (Super Fast)
+1. Install the browser extention [Twillot](https://chromewebstore.google.com/detail/flkokionhgagpmnhlngldhbfnblmenen).
+2. Open Twillot's dashboard through browser extension menu (it will take you to a new page).
+3. Click "skip" and finish the tutorial.
+4. Click "Login to Twitter". 
+5. Click "Continue", it will automatically fetch bookmarks (if stuck, just click retry).
+6. Click "Sync Bookmarks" and click "Start". (may take long depending of amount).
+7. After fetching all bookmarks, close the side bar.
+8. You can directly export your data by clicking download button but may not work in free tier, so we have to use the backup feature instead.
+9. Click the little yellow warning button "⚠️" on the left side menu and click "Backup".
+10. After downloading, open the zip file and extract the `posts.jsonl` file and import it to Twitter Vault.
+
+#### 1. Getting your Data
 
 1.  Export your Bookmarks or Likes as a `.json` or `.jsonl` file.
 2.  Open **Twitter Vault**.
 3.  Click the **Import** button in the top right.
 4.  Select your file. The app will process the data and store it in your browser.
 
-#### 3. Browsing
+#### 2. Browsing
 
 - Use the **Search Bar** to find specific text.
 - Toggle between **Bookmarks** and **Likes** using the tabs.
 - Click the **Layout Icons** (Grid, List, Gallery) to change how tweets are displayed.
 - Click "Authors" to see a leaderboard of who you bookmark the most.
 
-#### 4. Backup & Restore
+#### 3. Backup & Restore
 
 - **Export:** Click the "Export" button to save a clean backup of your current database. This includes any items you've deleted or organized.
 - **Reset:** Use the "Reset Database" button to wipe the local storage and start fresh.
@@ -101,9 +113,9 @@ This app is designed to work best with bookmark exporters that provide clean JSO
 
 ### WiP Features
 
+- Bulk selector feature (manage multiple items)
 - Import User likes and view statistics
-- Fetch your Bookmarks directly in the app (no more 3rd party exporter)
-
+  
 ---
 
 ### Contributing

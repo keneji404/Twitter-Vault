@@ -17,6 +17,13 @@ interface ImportEntry {
     original: string; // original quality images (including videos)
   }[];
 
+  // Twillot Keys
+  tweet_id?: string;
+  username?: string;
+  avatar_url?: string;
+  media_items?: any[];
+  extended_entities?: { media?: any[] };
+
   // Internal Backup Keys
   tweetId?: string;
   fullText?: string;
@@ -31,6 +38,19 @@ interface ImportEntry {
 
   [key: string]: any;
 }
+
+// Extract MP4 from Twillot data
+const findBestVideo = (mediaItem: any) => {
+  const info =
+    mediaItem.video_info || (mediaItem.type === "video" ? mediaItem : null);
+  if (info && info.variants) {
+    const best = info.variants
+      .filter((v: any) => v.content_type === "video/mp4")
+      .sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0))[0];
+    return best ? best.url : undefined;
+  }
+  return undefined;
+};
 
 export const processTwillotJson = async (file: File) => {
   if (!file.name.match(/\.jsonl?$/i)) {
@@ -64,28 +84,35 @@ export const processTwillotJson = async (file: File) => {
   }
 
   const itemsToSave: TweetItem[] = dataArray.map((entry) => {
-    // ID
-    const id = entry.id || entry.tweetId || "unknown_id";
+    let rawId = entry.id || entry.tweet_id || entry.tweetId || "unknown_id";
+    if (String(rawId).startsWith("bookmark_")) {
+      const parts = rawId.split("_");
+      rawId = parts[parts.length - 1];
+    }
 
-    // TEXT
-    const fullText = entry.fullText || entry.full_text || "";
-
+    const id = String(rawId);
+    const fullText = entry.fullText || entry.full_text || entry.text || "";
     // DATE
     let createdAt = new Date();
     if (entry.createdAt) {
       createdAt = new Date(entry.createdAt);
     } else if (entry.created_at) {
-      createdAt = new Date(entry.created_at);
+      if (typeof entry.created_at === "number") {
+        const ts = entry.created_at;
+        createdAt = new Date(ts < 10000000000 ? ts * 1000 : ts);
+      } else {
+        createdAt = new Date(entry.created_at);
+      }
     }
-
     // AUTHOR
     const authorHandle = entry.authorHandle || entry.screen_name || "Unknown";
-    const authorName = entry.authorName || entry.name || "Twitter User";
-    const avatarUrl = entry.avatarUrl || entry.profile_image_url;
-
+    const authorName =
+      entry.authorName || entry.name || entry.username || "Twitter User";
+    const avatarUrl =
+      entry.avatarUrl || entry.profile_image_url || entry.avatar_url;
     // TYPE
     let type: "bookmark" | "like" | "tweet" = "bookmark";
-    if (entry.type) {
+    if (entry.type && (entry.type === "bookmark" || entry.type === "like")) {
       type = entry.type;
     } else {
       if (entry.bookmarked) type = "bookmark";
@@ -110,10 +137,9 @@ export const processTwillotJson = async (file: File) => {
       entry.media.length > 0
     ) {
       mediaUrls = entry.media.map((m) => {
-        if (m.type === "video" || m.type === "animated_gif") {
-          return m.thumbnail;
-        }
-        return m.original || m.thumbnail;
+        return m.type === "video" || m.type === "animated_gif"
+          ? m.thumbnail
+          : m.original || m.url;
       });
 
       // Set Main Thumbnail (First Item)
@@ -123,8 +149,20 @@ export const processTwillotJson = async (file: File) => {
       const videoEntry = entry.media.find(
         (m) => m.type === "video" || m.type === "animated_gif",
       );
-      if (videoEntry) {
-        videoUrl = videoEntry.original;
+      if (videoEntry) videoUrl = videoEntry.original;
+    } else if (entry.extended_entities || entry.media_items) {
+      const rawMedia =
+        entry.extended_entities?.media || entry.media_items || [];
+      if (rawMedia.length > 0) {
+        mediaUrls = rawMedia.map((m: any) => m.media_url_https);
+        mediaUrl = mediaUrls[0];
+        const videoEntry = rawMedia.find(
+          (m: any) =>
+            m.type === "video" || m.type === "animated_gif" || m.video_info,
+        );
+        if (videoEntry) {
+          videoUrl = findBestVideo(videoEntry);
+        }
       }
     }
 

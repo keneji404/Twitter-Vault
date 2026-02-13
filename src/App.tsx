@@ -54,7 +54,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"bookmark" | "like">("bookmark");
   const [viewMode, setViewMode] = useState<"feed" | "authors" | "activity">(
-    "feed"
+    "feed",
   );
   const [layout, setLayout] = useState<"grid" | "list" | "gallery">("grid");
 
@@ -200,7 +200,7 @@ function App() {
         (i) =>
           i.fullText.toLowerCase().includes(q) ||
           i.authorHandle.toLowerCase().includes(q) ||
-          i.authorName.toLowerCase().includes(q)
+          i.authorName.toLowerCase().includes(q),
       );
     }
 
@@ -229,7 +229,7 @@ function App() {
         groupMap[item.authorHandle].count++;
       });
       groups = Object.values(groupMap).sort(
-        (a: any, b: any) => b.count - a.count
+        (a: any, b: any) => b.count - a.count,
       );
     }
 
@@ -344,7 +344,7 @@ function App() {
         const count = await downloadMediaZip(
           filteredItems,
           selectedAuthor,
-          (current, total) => setZipProgress({ current, total })
+          (current, total) => setZipProgress({ current, total }),
         );
 
         setDialog({
@@ -962,6 +962,17 @@ function App() {
                     : selectedAuthor
                       ? "No data found for this author."
                       : "Import your Twitter archive to get started."}
+                  <br /> You can follow the usage guide on{" "}
+                  <span className="text-blue-400 hover:text-blue-300">
+                    <a
+                      href="https://github.com/keneji404/Twitter-Vault?tab=readme-ov-file#usage-guide"
+                      target="_blank"
+                      className="underline"
+                    >
+                      GitHub
+                    </a>
+                  </span>
+                  .
                 </p>
               </div>
             )}
